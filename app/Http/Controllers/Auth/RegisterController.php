@@ -37,17 +37,15 @@ class RegisterController
             'favorite_club_id' => $validated['favorite_club_id'] ?? null,
         ]);
 
-        Auth::login($user);
-
         // Auto-enroll into selected club if provided
         if (!empty($validated['favorite_club_id'])) {
             try {
                 $user->clubMemberships()->attach($validated['favorite_club_id'], ['role' => 'member']);
             } catch (\Exception $e) {
-                // ignore duplicate or attach errors; user still created and logged in
+                // ignore duplicate or attach errors; user still created
             }
         }
 
-        return redirect()->route('feed')->with('success', 'Account created successfully!');
+        return redirect()->route('login')->with('success', 'Registration successful! Please log in with your credentials.');
     }
 }

@@ -1,0 +1,309 @@
+HTTP/1.1 200 OK
+Host: localhost:8000
+Connection: close
+X-Powered-By: PHP/8.2.12
+Content-Type: text/html; charset=utf-8
+Cache-Control: no-cache, private
+Date: Fri, 05 Jun 2026 13:33:10 GMT
+Set-Cookie: XSRF-TOKEN=eyJpdiI6Ik45L0FYSjdnRXVlbFdxdE9Ib25mR3c9PSIsInZhbHVlIjoiYndHTGdrNzlCRGpWeDdlamtDRTVYbUNDS3ZLVTJpc3d2S2VUL08yYlRZcy9BT0VNeVM4eEJkN0VBV0FhNVJzRGVEeUVRNnVweEpjdmRIT05JdVYzMFE3cVZiVVk2VXJmUDNWNlY2UG14STJacG1KWURBUUdOZjF0dFpHcHJhUEEiLCJtYWMiOiI3ZWRhMmJkMThlZTExZGU5NzFmMzA2NjA5ZGJmMDBlNWFkOGU5MjgyNmM0MTk1Y2ZiZTdmOTU3NDg0YTFjYWRkIiwidGFnIjoiIn0%3D; expires=Fri, 05 Jun 2026 15:33:10 GMT; Max-Age=7200; path=/; samesite=lax
+Set-Cookie: football%20social%20media_session=eyJpdiI6InpqOE9VWURNQXNWbEtJYXlBaWowZnc9PSIsInZhbHVlIjoiVld3NE9aMklqcERnc2thK3FNNFJEWThjVXdmRE5zTFVjazVWeWVzN3JQSmcwV3V2TWxlVWt2WTl5QXl4SXd3RksySWNUczVkMW5kd2tmRm5SWHczT1ZLZVJWd2FUWDgyemROaldFRjd4ektQY3QzcE1nMWRZK1ZpRE1nRkM2QVUiLCJtYWMiOiI2YmY4ZjE5MmQxN2E3OTUwY2Q5MzAyZDNhMzRhMjE2ZWFhMWYxZmE0ZjVjYmVkMTM4ODk0ZjA5OWVjNDdjM2Y5IiwidGFnIjoiIn0%3D; expires=Fri, 05 Jun 2026 15:33:10 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Football Social Media</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1f4788;
+            --secondary-color: #ff6b6b;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background-color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #153355;
+            border-color: #153355;
+        }
+
+        .btn-danger {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-danger:hover {
+            background-color: #e55555;
+            border-color: #e55555;
+        }
+
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .post-card {
+            margin-bottom: 20px;
+        }
+
+        .post-header {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .post-body {
+            padding: 15px;
+        }
+
+        .post-footer {
+            padding: 10px 15px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-around;
+            background-color: #f8f9fa;
+        }
+
+        .post-footer button {
+            border: none;
+            background: none;
+            color: #6c757d;
+            cursor: pointer;
+            font-size: 0.9rem;
+            flex: 1;
+            padding: 10px;
+        }
+
+        .post-footer button:hover {
+            color: var(--primary-color);
+        }
+
+        .post-footer button.liked {
+            color: var(--secondary-color);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .large-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar-card {
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: static;
+                top: auto;
+            }
+        }
+
+        .badge {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+    </style>
+    </head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="http://localhost:8000">
+                <i class="fas fa-football-ball"></i> Football Social
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                                            <li class="nav-item">
+                            <a class="nav-link" href="http://localhost:8000/login"><i class="fas fa-sign-in-alt"></i> Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="http://localhost:8000/register"><i class="fas fa-user-plus"></i> Register</a>
+                        </li>
+                                    </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="py-4">
+        <div class="container">
+            
+            
+            
+            <div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body p-5">
+                <h2 class="card-title mb-4 text-center">Create Account</h2>
+
+                <form action="/register" method="POST">
+                    <input type="hidden" name="_token" value="LlElC8f5NdXhAuYz9UuctUYzRwpGK8WuyHceEkQa" autocomplete="off">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control " id="name" name="name" value="" required>
+                                            </div>
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control " id="username" name="username" value="" required>
+                                            </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control " id="email" name="email" value="" required>
+                                            </div>
+
+                    <div class="mb-3">
+                        <label for="date_of_birth" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control " id="date_of_birth" name="date_of_birth" value="">
+                                            </div>
+
+                    <div class="mb-3">
+                        <label for="favorite_club_id" class="form-label">Favorite Club (optional)</label>
+                        <select class="form-select " id="favorite_club_id" name="favorite_club_id">
+                            <option value="">Select a club</option>
+                                                                                                <option value="6" >Bayern Munich</option>
+                                                                    <option value="8" >Chelsea FC</option>
+                                                                    <option value="2" >FC Barcelona</option>
+                                                                    <option value="5" >Juventus</option>
+                                                                    <option value="3" >Liverpool FC</option>
+                                                                    <option value="1" >Manchester United</option>
+                                                                    <option value="7" >Paris Saint-Germain</option>
+                                                                    <option value="4" >Real Madrid</option>
+                                                                                    </select>
+                                            </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control " id="password" name="password" required>
+                                            </div>
+
+                    <div class="mb-3">
+                        <label for="password_confirmation" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-3">Register</button>
+                </form>
+
+                <p class="text-center mb-0">
+                    Already have an account? <a href="http://localhost:8000/login">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var pwd = document.getElementById('password');
+    var pwdConf = document.getElementById('password_confirmation');
+    var submit = document.querySelector('form[action="http://localhost:8000/register"] button[type="submit"]');
+
+    function showFeedback(message) {
+        var fb = pwdConf.parentNode.querySelector('.invalid-feedback.client-side');
+        if (!fb) {
+            fb = document.createElement('div');
+            fb.className = 'invalid-feedback client-side';
+            pwdConf.parentNode.appendChild(fb);
+        }
+        fb.textContent = message;
+    }
+
+    function clearFeedback() {
+        var fb = pwdConf.parentNode.querySelector('.invalid-feedback.client-side');
+        if (fb) fb.textContent = '';
+    }
+
+    function validate() {
+        if (!pwd || !pwdConf || !submit) return;
+        if (pwd.value === '' && pwdConf.value === '') {
+            pwdConf.classList.remove('is-invalid');
+            clearFeedback();
+            submit.disabled = false;
+            return;
+        }
+
+        if (pwd.value !== pwdConf.value) {
+            pwdConf.classList.add('is-invalid');
+            showFeedback('Passwords do not match');
+            submit.disabled = true;
+        } else {
+            pwdConf.classList.remove('is-invalid');
+            clearFeedback();
+            submit.disabled = false;
+        }
+    }
+
+    if (pwd && pwdConf) {
+        pwd.addEventListener('input', validate);
+        pwdConf.addEventListener('input', validate);
+    }
+});
+</script>
+
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Str;
+
 return [
     'default' => env('SESSION_DRIVER', 'file'),
     'lifetime' => env('SESSION_LIFETIME', 120),
@@ -12,7 +14,7 @@ return [
     'lottery' => [2, 100],
     'cookie' => env(
         'SESSION_COOKIE',
-        strtolower(env('APP_NAME', 'Laravel')).'_session'
+        Str::slug(env('APP_NAME', 'Laravel'), '_').'_session'
     ),
     'path' => '/',
     'domain' => env('SESSION_DOMAIN', null),
