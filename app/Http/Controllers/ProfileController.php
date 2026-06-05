@@ -56,7 +56,7 @@ class ProfileController
 
         $user->update($validated);
 
-        return redirect()->route('profile.show', $user)->with('success', 'Profile updated successfully!');
+        return redirect()->route('profile.show', $user)->with('success_modal', 'Profile updated successfully!');
     }
 
     public function follow(User $user)
@@ -67,7 +67,7 @@ class ProfileController
             $authUser->follow($user);
         }
 
-        return back()->with('success', 'Following ' . $user->name);
+        return back()->with('success_modal', 'Following ' . $user->name);
     }
 
     public function unfollow(User $user)
@@ -75,6 +75,6 @@ class ProfileController
         $authUser = Auth::user();
         $authUser->unfollow($user);
 
-        return back()->with('success', 'Unfollowed ' . $user->name);
+        return back()->with('success_modal', 'Unfollowed ' . $user->name);
     }
 }

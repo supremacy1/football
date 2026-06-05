@@ -6,47 +6,167 @@
 <div class="row">
     <div class="col-lg-8">
         <?php if(auth()->guard()->check()): ?>
-            <div class="card post-card mb-4">
+            <div class="card post-card mb-4 shadow-sm">
                 <div class="card-body">
-                    <form action="<?php echo e(route('posts.store')); ?>" method="POST" enctype="multipart/form-data">
-                        <?php echo csrf_field(); ?>
-                        <div class="mb-3">
-                            <label for="content" class="form-label">What's on your mind?</label>
-                            <textarea class="form-control" id="content" name="content" rows="4" placeholder="Share your thoughts..." required></textarea>
-                        </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <img src="<?php echo e(auth()->user()->profile_picture ? asset('storage/' . auth()->user()->profile_picture) : 'https://via.placeholder.com/50'); ?>" alt="<?php echo e(auth()->user()->name); ?>" class="avatar">
+                        <button type="button" class="btn btn-outline-secondary flex-grow-1 text-start" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            What's on your mind, <?php echo e(auth()->user()->name); ?>?
+                        </button>
+                    </div>
+                    <div class="d-flex justify-content-between flex-wrap gap-2">
+                        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <i class="fas fa-pencil-alt"></i> Create Post
+                        </button>
+                        <button type="button" class="btn btn-light btn-sm">
+                            <i class="fas fa-image"></i> Photo
+                        </button>
+                        <button type="button" class="btn btn-light btn-sm">
+                            <i class="fas fa-video"></i> Live Video
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-                        <div class="mb-3">
-                            <label for="club_id" class="form-label">Club</label>
-                            <select class="form-select" id="club_id" name="club_id">
-                                <option value="">Select a club (optional)</option>
-                                <?php $__currentLoopData = $clubs ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $club): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <option value="<?php echo e($club->id); ?>"><?php echo e($club->name); ?></option>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </select>
+            <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createPostModalLabel">Create Post</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
+                        <div class="modal-body">
+                            <form action="<?php echo e(route('posts.store')); ?>" method="POST" enctype="multipart/form-data">
+                                <?php echo csrf_field(); ?>
+                                <div class="mb-3">
+                                    <label for="content" class="form-label">What's on your mind?</label>
+                                    <textarea class="form-control <?php $__errorArgs = ['content'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="content" name="content" rows="5" placeholder="Share your thoughts..." required><?php echo e(old('content')); ?></textarea>
+                                    <?php $__errorArgs = ['content'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                                </div>
 
-                        <div class="mb-3">
-                            <label for="post_type" class="form-label">Post Type</label>
-                            <select class="form-select" id="post_type" name="post_type">
-                                <option value="general">General</option>
-                                <option value="match_discussion">Match Discussion</option>
-                                <option value="transfer_news">Transfer News</option>
-                                <option value="player_stats">Player Stats</option>
-                            </select>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="club_id" class="form-label">Club</label>
+                                        <select class="form-select <?php $__errorArgs = ['club_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="club_id" name="club_id">
+                                            <option value="">Select a club (optional)</option>
+                                            <?php $__currentLoopData = $clubs ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $club): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($club->id); ?>" <?php if(old('club_id') == $club->id): echo 'selected'; endif; ?>><?php echo e($club->name); ?></option>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </select>
+                                        <?php $__errorArgs = ['club_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="post_type" class="form-label">Post Type</label>
+                                        <select class="form-select <?php $__errorArgs = ['post_type'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="post_type" name="post_type">
+                                            <option value="general" <?php if(old('post_type') == 'general'): echo 'selected'; endif; ?>>General</option>
+                                            <option value="match_discussion" <?php if(old('post_type') == 'match_discussion'): echo 'selected'; endif; ?>>Match Discussion</option>
+                                            <option value="transfer_news" <?php if(old('post_type') == 'transfer_news'): echo 'selected'; endif; ?>>Transfer News</option>
+                                            <option value="player_stats" <?php if(old('post_type') == 'player_stats'): echo 'selected'; endif; ?>>Player Stats</option>
+                                        </select>
+                                        <?php $__errorArgs = ['post_type'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="image" class="form-label">Image</label>
+                                        <input type="file" class="form-control <?php $__errorArgs = ['image'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="image" name="image" accept="image/*">
+                                        <?php $__errorArgs = ['image'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="video" class="form-label">Video</label>
+                                        <input type="file" class="form-control <?php $__errorArgs = ['video'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="video" name="video" accept="video/*">
+                                        <?php $__errorArgs = ['video'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Post</button>
+                                </div>
+                            </form>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="image" class="form-label">Image</label>
-                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="video" class="form-label">Video</label>
-                            <input type="file" class="form-control" id="video" name="video" accept="video/*">
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">Post</button>
-                    </form>
+                    </div>
                 </div>
             </div>
         <?php endif; ?>
@@ -160,6 +280,16 @@
         </div>
     </div>
 </div>
+
+<?php $__env->startSection('scripts'); ?>
+    <?php if($errors->any() && old('content')): ?>
+        <script>
+            window.addEventListener('DOMContentLoaded', function () {
+                var createPostModal = new bootstrap.Modal(document.getElementById('createPostModal'));
+                createPostModal.show();
+            });
+        </script>
+    <?php endif; ?>
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\banta\resources\views/posts/feed.blade.php ENDPATH**/ ?>

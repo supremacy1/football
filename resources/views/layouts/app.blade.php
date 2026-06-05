@@ -16,11 +16,17 @@
         body {
             background-color: var(--light-bg);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 70px;
         }
 
         .navbar {
             background-color: var(--primary-color);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
         }
 
         .navbar-brand {
@@ -207,11 +213,37 @@
                 </div>
             @endif
 
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            @if (session('success_modal'))
+                <div class="modal fade" id="sessionSuccessModal" tabindex="-1" aria-labelledby="sessionSuccessModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="sessionSuccessModalLabel">Success</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>{{ session('success_modal') }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continue</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                <script>
+                    window.addEventListener('DOMContentLoaded', function() {
+                        var successModal = new bootstrap.Modal(document.getElementById('sessionSuccessModal'));
+                        successModal.show();
+                    });
+                </script>
+            @endif
+
+            @if (session('success'))
+                <script>
+                    window.addEventListener('DOMContentLoaded', function() {
+                        alert(@json(session('success')));
+                    });
+                </script>
             @endif
 
             @if (session('error'))

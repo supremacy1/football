@@ -46,6 +46,6 @@ class RegisterController
             }
         }
 
-        return redirect()->route('login')->with('success', 'Registration successful! Please log in with your credentials.');
+        return redirect()->route('login')->with('success_modal', 'Registration successful! Please log in with your credentials.');
     }
 }

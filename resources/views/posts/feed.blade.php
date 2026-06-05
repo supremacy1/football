@@ -6,47 +6,97 @@
 <div class="row">
     <div class="col-lg-8">
         @auth
-            <div class="card post-card mb-4">
+            <div class="card post-card mb-4 shadow-sm">
                 <div class="card-body">
-                    <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <div class="mb-3">
-                            <label for="content" class="form-label">What's on your mind?</label>
-                            <textarea class="form-control" id="content" name="content" rows="4" placeholder="Share your thoughts..." required></textarea>
-                        </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <img src="{{ auth()->user()->profile_picture ? asset('storage/' . auth()->user()->profile_picture) : 'https://via.placeholder.com/50' }}" alt="{{ auth()->user()->name }}" class="avatar">
+                        <button type="button" class="btn btn-outline-secondary flex-grow-1 text-start" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            What's on your mind, {{ auth()->user()->name }}?
+                        </button>
+                    </div>
+                    <div class="d-flex justify-content-between flex-wrap gap-2">
+                        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <i class="fas fa-pencil-alt"></i> Create Post
+                        </button>
+                        <button type="button" class="btn btn-light btn-sm">
+                            <i class="fas fa-image"></i> Photo
+                        </button>
+                        <button type="button" class="btn btn-light btn-sm">
+                            <i class="fas fa-video"></i> Live Video
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-                        <div class="mb-3">
-                            <label for="club_id" class="form-label">Club</label>
-                            <select class="form-select" id="club_id" name="club_id">
-                                <option value="">Select a club (optional)</option>
-                                @foreach ($clubs ?? [] as $club)
-                                    <option value="{{ $club->id }}">{{ $club->name }}</option>
-                                @endforeach
-                            </select>
+            <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createPostModalLabel">Create Post</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
+                        <div class="modal-body">
+                            <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <div class="mb-3">
+                                    <label for="content" class="form-label">What's on your mind?</label>
+                                    <textarea class="form-control @error('content') is-invalid @enderror" id="content" name="content" rows="5" placeholder="Share your thoughts..." required>{{ old('content') }}</textarea>
+                                    @error('content')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                        <div class="mb-3">
-                            <label for="post_type" class="form-label">Post Type</label>
-                            <select class="form-select" id="post_type" name="post_type">
-                                <option value="general">General</option>
-                                <option value="match_discussion">Match Discussion</option>
-                                <option value="transfer_news">Transfer News</option>
-                                <option value="player_stats">Player Stats</option>
-                            </select>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="club_id" class="form-label">Club</label>
+                                        <select class="form-select @error('club_id') is-invalid @enderror" id="club_id" name="club_id">
+                                            <option value="">Select a club (optional)</option>
+                                            @foreach ($clubs ?? [] as $club)
+                                                <option value="{{ $club->id }}" @selected(old('club_id') == $club->id)>{{ $club->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('club_id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="post_type" class="form-label">Post Type</label>
+                                        <select class="form-select @error('post_type') is-invalid @enderror" id="post_type" name="post_type">
+                                            <option value="general" @selected(old('post_type') == 'general')>General</option>
+                                            <option value="match_discussion" @selected(old('post_type') == 'match_discussion')>Match Discussion</option>
+                                            <option value="transfer_news" @selected(old('post_type') == 'transfer_news')>Transfer News</option>
+                                            <option value="player_stats" @selected(old('post_type') == 'player_stats')>Player Stats</option>
+                                        </select>
+                                        @error('post_type')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="image" class="form-label">Image</label>
+                                        <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
+                                        @error('image')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="video" class="form-label">Video</label>
+                                        <input type="file" class="form-control @error('video') is-invalid @enderror" id="video" name="video" accept="video/*">
+                                        @error('video')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Post</button>
+                                </div>
+                            </form>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="image" class="form-label">Image</label>
-                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="video" class="form-label">Video</label>
-                            <input type="file" class="form-control" id="video" name="video" accept="video/*">
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">Post</button>
-                    </form>
+                    </div>
                 </div>
             </div>
         @endauth
@@ -159,4 +209,14 @@
         </div>
     </div>
 </div>
+
+@section('scripts')
+    @if ($errors->any() && old('content'))
+        <script>
+            window.addEventListener('DOMContentLoaded', function () {
+                var createPostModal = new bootstrap.Modal(document.getElementById('createPostModal'));
+                createPostModal.show();
+            });
+        </script>
+    @endif
 @endsection

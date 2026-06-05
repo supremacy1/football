@@ -15,7 +15,8 @@ class PostController
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
-        return view('posts.feed', ['posts' => $posts]);
+        $clubs = Club::orderBy('name')->get();
+        return view('posts.feed', ['posts' => $posts, 'clubs' => $clubs]);
     }
 
     public function showCreateForm()
