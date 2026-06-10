@@ -64,7 +64,7 @@ APP_URL=http://localhost:8000
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=football_social_media
+DB_DATABASE=footbal_bant
 DB_USERNAME=root
 DB_PASSWORD=
 ```
@@ -90,14 +90,14 @@ Application key set successfully.
 Option A: Using Command Line
 ```bash
 mysql -u root -p
-> CREATE DATABASE football_social_media;
+> CREATE DATABASE footbal_bant;
 > exit;
 ```
 
 Option B: Using phpMyAdmin
 1. Open `http://localhost/phpmyadmin`
 2. Click "New" on the left
-3. Enter database name: `football_social_media`
+3. Enter database name: `footbal_bant`
 4. Click "Create"
 
 ### 6️⃣ Run Database Migrations

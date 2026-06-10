@@ -2,9 +2,123 @@
 
 @section('title', 'News Feed')
 
+@section('styles')
+<style>
+    .fb-modal-header { border-bottom: 1px solid #ddd; text-align: center; padding: 15px; position: relative; }
+    .fb-modal-header h5 { margin: 0; font-weight: 700; font-size: 1.25rem; }
+    .fb-modal-header .btn-close { position: absolute; right: 15px; top: 15px; background-color: #e4e6eb; border-radius: 50%; opacity: 1; padding: 10px; font-size: 0.8rem; }
+    
+    .fb-user-info { display: flex; align-items: center; margin-bottom: 15px; }
+    .fb-user-info img { width: 40px; height: 40px; border-radius: 50%; margin-right: 12px; object-fit: cover; }
+    .fb-user-info .user-name { font-weight: 600; font-size: 0.95rem; line-height: 1.2; }
+    
+    .fb-textarea { border: none; font-size: 1.25rem; resize: none; width: 100%; min-height: 150px; padding: 0; margin-top: 10px; }
+    .fb-textarea:focus { box-shadow: none; outline: none; }
+    
+    .fb-add-to-post { 
+        display: flex; align-items: center; justify-content: space-between; 
+        border: 1px solid #ddd; border-radius: 8px; padding: 10px 15px; margin-top: 15px;
+    }
+    .fb-add-to-post span { font-weight: 600; font-size: 0.95rem; }
+    .fb-icon-btn { 
+        background: none; border: none; padding: 8px; border-radius: 50%; 
+        transition: background 0.2s; color: #45bd62; font-size: 1.25rem; cursor: pointer;
+    }
+    .fb-icon-btn:hover { background-color: #f2f2f2; }
+    .fb-icon-btn.photo { color: #45bd62; }
+    
+    .fb-post-btn { width: 100%; border-radius: 6px; font-weight: 600; padding: 8px; margin-top: 15px; }
+    
+    .preview-container { position: relative; display: none; margin-top: 15px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: #f0f2f5; }
+    .preview-container img { width: 100%; height: auto; max-height: 300px; object-fit: contain; }
+    .remove-preview { 
+        position: absolute; top: 10px; right: 10px; background: white; border-radius: 50%; 
+        width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; 
+        cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;
+    }
+    
+    .fb-select-row { display: flex; gap: 8px; margin-top: 4px; }
+    .fb-select-row select { font-size: 0.75rem; border-radius: 6px; background-color: #e4e6eb; border: none; font-weight: 600; color: #050505; padding: 2px 8px; cursor: pointer; }
+    
+    .modal-content { border-radius: 8px; border: none; box-shadow: 0 12px 28px rgba(0,0,0,0.2); }
+
+    /* Left Sidebar Navigation */
+    .left-nav-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #050505;
+        font-weight: 600;
+        transition: background 0.2s;
+        margin-bottom: 2px;
+    }
+    .left-nav-item:hover { background-color: #e4e6eb; color: #050505; }
+    .left-nav-item i {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-right: 12px;
+    }
+    .left-nav-item img {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        margin-right: 12px;
+        object-fit: cover;
+    }
+    .left-nav-item.active { background-color: rgba(0,0,0,0.05); }
+    .sticky-left-nav { position: sticky; top: 85px; }
+</style>
+@endsection
+
 @section('content')
 <div class="row">
-    <div class="col-lg-8">
+    <!-- Left Navbar Sidebar -->
+    <div class="col-lg-3 d-none d-lg-block">
+        <div class="sticky-left-nav">
+            <a href="{{ route('profile.show', auth()->user()) }}" class="left-nav-item">
+                <img src="{{ auth()->user()->profile_picture ? asset('storage/' . auth()->user()->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=random' }}" alt="">
+                <span>{{ auth()->user()->name }}</span>
+            </a>
+            <a href="{{ route('feed') }}" class="left-nav-item {{ Route::is('feed') ? 'active' : '' }}">
+                <i class="fas fa-home text-primary"></i>
+                <span>Home</span>
+            </a>
+            <a href="{{ route('news') }}" class="left-nav-item {{ Route::is('news') ? 'active' : '' }}">
+                <i class="fas fa-newspaper text-success"></i>
+                <span>News Feed</span>
+            </a>
+            <a href="{{ route('clubs.index') }}" class="left-nav-item">
+                <i class="fas fa-users text-info"></i>
+                <span>Clubs</span>
+            </a>
+            <a href="#" class="left-nav-item">
+                <i class="fas fa-calendar-check text-danger"></i>
+                <span>Matches</span>
+            </a>
+            <a href="#" class="left-nav-item">
+                <i class="fas fa-bookmark text-warning"></i>
+                <span>Saved</span>
+            </a>
+            <hr>
+            <h6 class="px-3 text-muted mb-2">Shortcuts</h6>
+            @foreach(auth()->user()->clubMemberships->take(5) as $club)
+                <a href="{{ route('clubs.show', $club) }}" class="left-nav-item">
+                    <div class="bg-light rounded p-1 me-3 text-center" style="width: 36px;"><i class="fas fa-shield-alt text-secondary"></i></div>
+                    <span>{{ $club->name }}</span>
+                </a>
+            @endforeach
+        </div>
+    </div>
+
+    <!-- Main Content (Feed) -->
+    <div class="col-lg-6">
+        @yield('feed_header')
         @auth
             <div class="card post-card mb-4 shadow-sm">
                 <div class="card-body">
@@ -30,73 +144,63 @@
 
             <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="createPostModalLabel">Create Post</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
-                                @csrf
-                                <div class="mb-3">
-                                    <label for="content" class="form-label">What's on your mind?</label>
-                                    <textarea class="form-control @error('content') is-invalid @enderror" id="content" name="content" rows="5" placeholder="Share your thoughts..." required>{{ old('content') }}</textarea>
-                                    @error('content')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-6">
-                                        <label for="club_id" class="form-label">Club</label>
-                                        <select class="form-select @error('club_id') is-invalid @enderror" id="club_id" name="club_id">
-                                            <option value="">Select a club (optional)</option>
+                <div class="modal-content">
+                    <div class="fb-modal-header">
+                        <h5 id="createPostModalLabel">Create post</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body px-4">
+                        <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data" id="fbPostForm">
+                            @csrf
+                            <div class="fb-user-info">
+                                <img src="{{ auth()->user()->profile_picture ? asset('storage/' . auth()->user()->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=random' }}" alt="{{ auth()->user()->name }}">
+                                <div>
+                                    <div class="user-name">{{ auth()->user()->name }}</div>
+                                    <div class="fb-select-row">
+                                        <select name="club_id">
+                                            <option value="">Public</option>
                                             @foreach ($clubs ?? [] as $club)
                                                 <option value="{{ $club->id }}" @selected(old('club_id') == $club->id)>{{ $club->name }}</option>
                                             @endforeach
                                         </select>
-                                        @error('club_id')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="post_type" class="form-label">Post Type</label>
-                                        <select class="form-select @error('post_type') is-invalid @enderror" id="post_type" name="post_type">
-                                            <option value="general" @selected(old('post_type') == 'general')>General</option>
-                                            <option value="match_discussion" @selected(old('post_type') == 'match_discussion')>Match Discussion</option>
-                                            <option value="transfer_news" @selected(old('post_type') == 'transfer_news')>Transfer News</option>
-                                            <option value="player_stats" @selected(old('post_type') == 'player_stats')>Player Stats</option>
+                                        <select name="post_type">
+                                            <option value="general">General</option>
+                                            <option value="match_discussion">Match</option>
+                                            <option value="transfer_news">Transfer</option>
+                                            <option value="player_stats">Stats</option>
                                         </select>
-                                        @error('post_type')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-6">
-                                        <label for="image" class="form-label">Image</label>
-                                        <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
-                                        @error('image')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="video" class="form-label">Video</label>
-                                        <input type="file" class="form-control @error('video') is-invalid @enderror" id="video" name="video" accept="video/*">
-                                        @error('video')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
+                            <textarea class="fb-textarea" name="content" placeholder="What's on your mind, {{ explode(' ', auth()->user()->name)[0] }}?" required>{{ old('content') }}</textarea>
 
-                                <div class="d-flex justify-content-end gap-2">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Post</button>
+                            <div class="preview-container" id="imagePreviewContainer">
+                                <div class="remove-preview" onclick="removeImage()"><i class="fas fa-times"></i></div>
+                                <img id="imagePreview" src="#" alt="Preview">
+                            </div>
+
+                            <input type="file" id="postImageInput" name="image" accept="image/*" class="d-none" onchange="previewImage(this)">
+
+                            <div class="fb-add-to-post">
+                                <span>Add to your post</span>
+                                <div class="d-flex">
+                                    <button type="button" class="fb-icon-btn photo" onclick="document.getElementById('postImageInput').click()" title="Photo">
+                                        <i class="fas fa-images"></i>
+                                    </button>
+                                    <button type="button" class="fb-icon-btn" style="color: #f7b928;" title="Feeling/activity">
+                                        <i class="fas fa-smile"></i>
+                                    </button>
+                                    <button type="button" class="fb-icon-btn" style="color: #f5533d;" title="Location">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </button>
                                 </div>
-                            </form>
-                        </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary fb-post-btn">Post</button>
+                        </form>
                     </div>
+                </div>
                 </div>
             </div>
         @endauth
@@ -110,7 +214,12 @@
                             <h6 class="mb-0">
                                 <a href="{{ route('profile.show', $post->user) }}" class="text-decoration-none">{{ $post->user->name }}</a>
                             </h6>
-                            <small class="text-muted">@{{ $post->user->username }} · {{ $post->created_at->diffForHumans() }}</small>
+                        <small class="text-muted">
+                            {{ '@' . $post->user->username }} · 
+                            @if($post->user->favoriteClub)
+                                <span class="text-primary fw-semibold"><i class="fas fa-shield-alt small"></i> {{ $post->user->favoriteClub->name }}</span> ·
+                            @endif
+                            {{ $post->created_at->diffForHumans() }}</small>
                         </div>
                     </div>
                     @auth
@@ -124,7 +233,7 @@
                                     <li><form action="{{ route('posts.destroy', $post) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="dropdown-item text-danger">Delete</button>
+                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Are you sure you want to delete this post?')">Delete</button>
                                     </form></li>
                                 </ul>
                             </div>
@@ -152,18 +261,12 @@
 
                 <div class="post-footer">
                     @auth
-                        <form action="{{ route('posts.like', $post) }}" method="POST" class="w-100">
-                            @csrf
-                            <button type="submit" class="w-100 @if ($post->isLikedBy(auth()->user())) liked @endif">
-                                <i class="fas fa-thumbs-up"></i> Like ({{ $post->likes_count }})
-                            </button>
-                        </form>
-                        <form action="{{ route('posts.dislike', $post) }}" method="POST" class="w-100">
-                            @csrf
-                            <button type="submit" class="w-100 @if ($post->isDislikedBy(auth()->user())) liked @endif">
-                                <i class="fas fa-thumbs-down"></i> Dislike ({{ $post->dislikes_count }})
-                            </button>
-                        </form>
+                        <button type="button" class="w-100 engagement-btn like-btn @if ($post->isLikedBy(auth()->user())) liked @endif" data-post-id="{{ $post->id }}" onclick="handleEngagement(this, 'like')">
+                            <i class="fas fa-thumbs-up"></i> <span>Like ({{ $post->likes_count }})</span>
+                        </button>
+                        <button type="button" class="w-100 engagement-btn dislike-btn @if ($post->isDislikedBy(auth()->user())) liked @endif" data-post-id="{{ $post->id }}" onclick="handleEngagement(this, 'dislike')">
+                            <i class="fas fa-thumbs-down"></i> <span>Dislike ({{ $post->dislikes_count }})</span>
+                        </button>
                     @else
                         <button class="w-100"><i class="fas fa-thumbs-up"></i> Like ({{ $post->likes_count }})</button>
                         <button class="w-100"><i class="fas fa-thumbs-down"></i> Dislike ({{ $post->dislikes_count }})</button>
@@ -185,7 +288,8 @@
         {{ $posts->links() }}
     </div>
 
-    <div class="col-lg-4">
+    <!-- Right Sidebar (Popular) -->
+    <div class="col-lg-3">
         <div class="sidebar">
             <div class="card sidebar-card">
                 <div class="card-body">
@@ -219,4 +323,60 @@
             });
         </script>
     @endif
+
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreviewContainer').style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removeImage() {
+            document.getElementById('postImageInput').value = '';
+            document.getElementById('imagePreviewContainer').style.display = 'none';
+        }
+
+        const textarea = document.querySelector('.fb-textarea');
+        if(textarea) {
+            textarea.addEventListener('input', function() {
+                if(this.value.length > 80) {
+                    this.style.fontSize = '1.1rem';
+                } else {
+                    this.style.fontSize = '1.25rem';
+                }
+            });
+        }
+
+        async function handleEngagement(btn, type) {
+            const postId = btn.getAttribute('data-post-id');
+            const url = `/posts/${postId}/${type}`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                
+                const postCard = btn.closest('.card');
+                const likeBtn = postCard.querySelector('.like-btn');
+                const dislikeBtn = postCard.querySelector('.dislike-btn');
+                
+                if(data.liked) likeBtn.classList.add('liked'); else likeBtn.classList.remove('liked');
+                if(data.disliked) dislikeBtn.classList.add('liked'); else dislikeBtn.classList.remove('liked');
+                
+                likeBtn.querySelector('span').textContent = `Like (${data.likes_count})`;
+                dislikeBtn.querySelector('span').textContent = `Dislike (${data.dislikes_count})`;
+            } catch (error) {
+                console.error('Engagement failed:', error);
+            }
+        }
+    </script>
 @endsection

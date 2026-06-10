@@ -95,7 +95,7 @@ A Laravel-based social media platform designed for football (soccer) fans to con
 
 5. **Configure database in .env**
    ```
-   DB_DATABASE=football_social_media
+   DB_DATABASE=footbal_bant
    DB_USERNAME=root
    DB_PASSWORD=
    ```

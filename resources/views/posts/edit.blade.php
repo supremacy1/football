@@ -52,7 +52,7 @@
                         <label for="image" class="form-label">Image</label>
                         @if ($post->image)
                             <div class="mb-2">
-                                <img src="{{ asset('storage/' . $post->image) }}" alt="Current image" class="img-fluid rounded" style="max-height: 200px;">
+                                <img src="{{ asset('storage/' . $post->image) }}" alt="Post image" class="img-thumbnail" style="height: 100px; width: 100px; object-fit: cover;">
                             </div>
                         @endif
                         <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">

@@ -123,7 +123,7 @@
 1. **Database Setup**
    ```bash
    mysql -u root
-   CREATE DATABASE football_social_media;
+   CREATE DATABASE footbal_bant;
    ```
 
 2. **Install Dependencies**
@@ -138,7 +138,7 @@
    ```
 
 4. **Update .env**
-   - Set DB_DATABASE=football_social_media
+   - Set DB_DATABASE=footbal_bant
    - Set DB_USERNAME=root
    - Set DB_PASSWORD= (if needed)
 

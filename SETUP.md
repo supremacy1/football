@@ -6,7 +6,7 @@
 ```bash
 # Create a new MySQL database
 mysql -u root -p
-> CREATE DATABASE football_social_media;
+> CREATE DATABASE footbal_bant;
 > EXIT;
 ```
 
@@ -23,7 +23,7 @@ php artisan key:generate
 
 Update `.env` with your database credentials:
 ```
-DB_DATABASE=football_social_media
+DB_DATABASE=footbal_bant
 DB_USERNAME=root
 DB_PASSWORD=your_password
 ```

@@ -21,6 +21,7 @@ class PostEngagementController
         if ($request->expectsJson()) {
             return response()->json([
                 'liked' => $post->isLikedBy($user),
+                'disliked' => $post->isDislikedBy($user),
                 'likes_count' => $post->likes_count,
                 'dislikes_count' => $post->dislikes_count,
             ]);
@@ -42,6 +43,7 @@ class PostEngagementController
         if ($request->expectsJson()) {
             return response()->json([
                 'disliked' => $post->isDislikedBy($user),
+                'liked' => $post->isLikedBy($user),
                 'likes_count' => $post->likes_count,
                 'dislikes_count' => $post->dislikes_count,
             ]);

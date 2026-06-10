@@ -14,7 +14,7 @@ class ProfileController
     {
         $user->load(['posts' => function ($query) {
             $query->orderBy('created_at', 'desc');
-        }, 'followers', 'following', 'clubMemberships']);
+        }, 'followers', 'following', 'clubMemberships', 'favoriteClub']);
 
         return view('profile.show', ['user' => $user]);
     }

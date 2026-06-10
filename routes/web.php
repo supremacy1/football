@@ -9,6 +9,7 @@ use App\Http\Controllers\Post\PostEngagementController;
 use App\Http\Controllers\Post\CommentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ClubController;
+use App\Http\Controllers\LiveMatchController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -18,6 +19,8 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisterController::class, 'showRegisterForm'])->name('register');
     Route::post('register', [RegisterController::class, 'register']);
+
+    Route::post('check-availability', [RegisterController::class, 'checkAvailability'])->name('check.availability');
 
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
@@ -34,6 +37,7 @@ Route::middleware('auth')->group(function () {
 
     // Post Routes
     Route::get('feed', [PostController::class, 'feed'])->name('feed');
+    Route::get('news', [PostController::class, 'news'])->name('news');
     Route::get('posts/create', [PostController::class, 'showCreateForm'])->name('posts.create');
     Route::post('posts', [PostController::class, 'store'])->name('posts.store');
     Route::get('posts/{post}', [PostController::class, 'show'])->name('posts.show');
@@ -67,4 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::get('matches/create', [ClubController::class, 'createMatch'])->name('matches.create');
     Route::post('matches', [ClubController::class, 'storeMatch'])->name('matches.store');
     Route::put('matches/{match}/score', [ClubController::class, 'updateMatchScore'])->name('matches.updateScore');
+
+    // Live Matches Route
+    Route::get('live', [LiveMatchController::class, 'index'])->name('matches.live');
 });

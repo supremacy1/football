@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
 use App\Models\Club;
+use App\Mail\WelcomeMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class RegisterController
 {
@@ -46,6 +48,21 @@ class RegisterController
             }
         }
 
+        // Send welcome email to the user
+        try {
+            Mail::to($user->email)->queue(new WelcomeMail($user));
+        } catch (\Throwable $e) {
+            // Log the error but allow registration to continue
+        }
+
         return redirect()->route('login')->with('success_modal', 'Registration successful! Please log in with your credentials.');
+    }
+
+    public function checkAvailability(Request $request)
+    {
+        $type = $request->type; // 'email' or 'username'
+        $value = $request->value;
+        $exists = User::where($type, $value)->exists();
+        return response()->json(['exists' => $exists]);
     }
 }

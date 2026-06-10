@@ -4,19 +4,36 @@
 
 @section('content')
 <div class="profile-cover mb-4">
-    @if ($user->cover_photo)
-        <div class="cover-wrapper" style="background-image: url('{{ asset('storage/' . $user->cover_photo) }}');"></div>
-    @else
-        <div class="cover-wrapper" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
-    @endif
+    @php
+        $coverUrl = $user->cover_photo ? asset('storage/' . $user->cover_photo) : null;
+        $avatarUrl = $user->profile_picture ? asset('storage/' . $user->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&size=500&background=random';
+    @endphp
+    <div class="cover-wrapper shadow-sm {{ $coverUrl ? 'preview-trigger' : '' }}" 
+         @if($coverUrl) data-src="{{ $coverUrl }}" @endif
+         style="{{ $coverUrl ? 'background-image: url('.$coverUrl.');' : 'background: linear-gradient(135deg, #8e9eab 0%, #eef2f3 100%);' }}">
+        @auth
+            @if (auth()->user()->id === $user->id)
+                <div class="edit-cover-btn">
+                    <a href="{{ route('profile.edit') }}" class="btn btn-light btn-sm fw-bold shadow-sm">
+                        <i class="fas fa-camera me-1"></i> Edit Cover Photo
+                    </a>
+                </div>
+            @endif
+        @endauth
+    </div>
     <div class="cover-overlay container">
-        <div class="d-flex align-items-end" style="min-height: 180px;">
+        <div class="d-flex flex-column flex-md-row align-items-center align-items-md-end pb-3">
             <div class="me-4 profile-avatar-wrap">
-                <img src="{{ $user->profile_picture ? asset('storage/' . $user->profile_picture) : 'https://via.placeholder.com/140' }}" alt="{{ $user->name }}" class="large-avatar border-4 border-white shadow">
+                <img src="{{ $avatarUrl }}" alt="{{ $user->name }}" class="large-avatar border-4 border-white shadow preview-trigger" data-src="{{ $avatarUrl }}">
             </div>
-            <div class="flex-grow-1 text-white">
-                <h2 class="mb-0">{{ $user->name }}</h2>
-                <p class="mb-1">@{{ $user->username }}</p>
+            <div class="flex-grow-1 text-center text-md-start profile-info-text">
+                <h1 class="fw-bold mb-0">{{ $user->name }}</h1>
+                <p class="mb-1 text-muted">{{ '@' . $user->username }}</p>
+                @if ($user->favoriteClub)
+                    <p class="mb-2 small">
+                        <i class="fas fa-shield-alt text-primary"></i> Supporting <strong>{{ $user->favoriteClub->name }}</strong>
+                    </p>
+                @endif
                 @if ($user->bio)
                     <p class="small mb-0">{{ $user->bio }}</p>
                 @endif
@@ -41,8 +58,8 @@
                 @endauth
             </div>
         </div>
-        <nav class="profile-nav mt-3">
-            <ul class="nav nav-tabs">
+        <nav class="profile-nav border-top mt-2">
+            <ul class="nav nav-pills py-2">
                 <li class="nav-item"><a class="nav-link active" href="#posts" data-bs-toggle="tab">Posts</a></li>
                 <li class="nav-item"><a class="nav-link" href="#about" data-bs-toggle="tab">About</a></li>
                 <li class="nav-item"><a class="nav-link" href="#photos" data-bs-toggle="tab">Photos</a></li>
@@ -60,7 +77,7 @@
                     <div class="card post-card mb-3">
                         <div class="post-header d-flex justify-content-between align-items-start">
                             <div class="d-flex align-items-center">
-                                <img src="{{ $user->profile_picture ? asset('storage/' . $user->profile_picture) : 'https://via.placeholder.com/40' }}" alt="{{ $user->name }}" class="avatar me-3">
+                                <img src="{{ $user->profile_picture ? asset('storage/' . $user->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&size=40&background=random' }}" alt="{{ $user->name }}" class="avatar me-3">
                                 <div>
                                     <h6 class="mb-0"><a href="{{ route('profile.show', $user) }}" class="text-decoration-none">{{ $user->name }}</a></h6>
                                     <small class="text-muted">{{ $post->created_at->diffForHumans() }}</small>
@@ -210,12 +227,31 @@
     </div>
 </div>
 
+<!-- Full Screen Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body p-0 text-center position-relative">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                <img src="" id="previewImageSource" class="img-fluid rounded shadow-lg" style="max-height: 90vh;">
+            </div>
+        </div>
+    </div>
+</div>
+
 @section('styles')
     <style>
-        .cover-wrapper { height: 260px; background-size: cover; background-position: center; border-radius: 8px; }
-        .cover-overlay { margin-top: -120px; }
-        .profile-avatar-wrap { width: 140px; height: 140px; }
-        .profile-nav .nav-link { color: #fff; background: rgba(0,0,0,0.2); border: none; }
+        .profile-cover { background: white; border-radius: 0 0 8px 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .cover-wrapper { height: 350px; background-size: cover; background-position: center; border-radius: 0 0 8px 8px; position: relative; }
+        .cover-wrapper.preview-trigger { cursor: pointer; }
+        .edit-cover-btn { position: absolute; bottom: 15px; right: 15px; z-index: 5; }
+        .cover-overlay { margin-top: -100px; position: relative; z-index: 2; }
+        .profile-avatar-wrap { width: 168px; height: 168px; position: relative; }
+        .large-avatar { width: 168px; height: 168px; border-radius: 50%; object-fit: cover; background: white; cursor: pointer; }
+        .profile-info-text { padding-bottom: 15px; }
+        .profile-info-text h1 { font-size: 2rem; }
+        .profile-nav .nav-link { color: #65676b; font-weight: 600; margin-right: 5px; }
+        .profile-nav .nav-link.active { background-color: rgba(0,0,0,0.05); color: var(--primary-color); }
         .post-images .img-fluid { cursor: pointer; }
     </style>
 @endsection
@@ -238,6 +274,21 @@
                         bsCarousel.to(index);
                     }
                 });
+            });
+
+            // Generic Image Preview Logic
+            const previewModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+            const previewImg = document.getElementById('previewImageSource');
+            document.querySelectorAll('.preview-trigger').forEach(function (el) {
+                el.addEventListener('click', function (e) {
+                    const src = this.getAttribute('data-src');
+                    if (src) { previewImg.src = src; previewModal.show(); }
+                });
+            });
+
+            // Stop event bubbling for the edit button so it doesn't trigger preview
+            document.querySelector('.edit-cover-btn')?.addEventListener('click', function(e) {
+                e.stopPropagation();
             });
         });
     </script>

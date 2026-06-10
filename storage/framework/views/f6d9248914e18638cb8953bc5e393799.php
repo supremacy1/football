@@ -13,7 +13,12 @@
                         <h6 class="mb-0">
                             <a href="<?php echo e(route('profile.show', $post->user)); ?>" class="text-decoration-none"><?php echo e($post->user->name); ?></a>
                         </h6>
-                        <small class="text-muted">{{ $post->user->username }} · <?php echo e($post->created_at->diffForHumans()); ?></small>
+                        <small class="text-muted">
+                            <?php echo e('@' . $post->user->username); ?> · 
+                            <?php if($post->user->favoriteClub): ?>
+                                <span class="text-primary fw-semibold"><i class="fas fa-shield-alt small"></i> <?php echo e($post->user->favoriteClub->name); ?></span> ·
+                            <?php endif; ?>
+                            <?php echo e($post->created_at->diffForHumans()); ?></small>
                     </div>
                 </div>
                 <?php if(auth()->guard()->check()): ?>
@@ -27,7 +32,7 @@
                                 <li><form action="<?php echo e(route('posts.destroy', $post)); ?>" method="POST">
                                     <?php echo csrf_field(); ?>
                                     <?php echo method_field('DELETE'); ?>
-                                    <button type="submit" class="dropdown-item text-danger">Delete</button>
+                                    <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Are you sure you want to delete this post?')">Delete</button>
                                 </form></li>
                             </ul>
                         </div>
@@ -55,18 +60,12 @@
 
             <div class="post-footer">
                 <?php if(auth()->guard()->check()): ?>
-                    <form action="<?php echo e(route('posts.like', $post)); ?>" method="POST" class="w-100">
-                        <?php echo csrf_field(); ?>
-                        <button type="submit" class="w-100 <?php if($post->isLikedBy(auth()->user())): ?> liked <?php endif; ?>">
-                            <i class="fas fa-thumbs-up"></i> Like (<?php echo e($post->likes_count); ?>)
-                        </button>
-                    </form>
-                    <form action="<?php echo e(route('posts.dislike', $post)); ?>" method="POST" class="w-100">
-                        <?php echo csrf_field(); ?>
-                        <button type="submit" class="w-100 <?php if($post->isDislikedBy(auth()->user())): ?> liked <?php endif; ?>">
-                            <i class="fas fa-thumbs-down"></i> Dislike (<?php echo e($post->dislikes_count); ?>)
-                        </button>
-                    </form>
+                    <button type="button" class="w-100 engagement-btn like-btn <?php if($post->isLikedBy(auth()->user())): ?> liked <?php endif; ?>" data-post-id="<?php echo e($post->id); ?>" onclick="handleEngagement(this, 'like')">
+                        <i class="fas fa-thumbs-up"></i> <span>Like (<?php echo e($post->likes_count); ?>)</span>
+                    </button>
+                    <button type="button" class="w-100 engagement-btn dislike-btn <?php if($post->isDislikedBy(auth()->user())): ?> liked <?php endif; ?>" data-post-id="<?php echo e($post->id); ?>" onclick="handleEngagement(this, 'dislike')">
+                        <i class="fas fa-thumbs-down"></i> <span>Dislike (<?php echo e($post->dislikes_count); ?>)</span>
+                    </button>
                 <?php else: ?>
                     <button class="w-100"><i class="fas fa-thumbs-up"></i> Like (<?php echo e($post->likes_count); ?>)</button>
                     <button class="w-100"><i class="fas fa-thumbs-down"></i> Dislike (<?php echo e($post->dislikes_count); ?>)</button>
@@ -101,7 +100,7 @@
                                 <h6 class="mb-0">
                                     <a href="<?php echo e(route('profile.show', $comment->user)); ?>" class="text-decoration-none"><?php echo e($comment->user->name); ?></a>
                                 </h6>
-                                <small class="text-muted">{{ $comment->user->username }} · <?php echo e($comment->created_at->diffForHumans()); ?></small>
+                                <small class="text-muted"><?php echo e('@' . $comment->user->username); ?> · <?php echo e($comment->created_at->diffForHumans()); ?></small>
                             </div>
                         </div>
                         <?php if(auth()->guard()->check()): ?>
@@ -117,20 +116,100 @@
                     <p class="mb-2"><?php echo e($comment->content); ?></p>
                     <?php if(auth()->guard()->check()): ?>
                         <div>
-                            <form action="<?php echo e(route('comments.like', $comment)); ?>" method="POST" class="d-inline">
-                                <?php echo csrf_field(); ?>
-                                <button type="submit" class="btn btn-sm btn-link <?php if($comment->isLikedBy(auth()->user())): ?> text-danger <?php endif; ?>">
-                                    <i class="fas fa-heart"></i> <?php echo e($comment->likes_count); ?>
+                            <button type="button" class="btn btn-sm btn-link <?php if($comment->isLikedBy(auth()->user())): ?> text-danger <?php endif; ?>" onclick="handleCommentLike(this, '<?php echo e($comment->id); ?>')">
+                                <i class="fas fa-heart"></i> <?php echo e($comment->likes_count); ?>
 
-                                </button>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-link text-primary" onclick="toggleReplyForm(<?php echo e($comment->id); ?>)">
+                                <i class="fas fa-reply"></i> Reply
+                            </button>
+                        </div>
+                        <div id="reply-form-<?php echo e($comment->id); ?>" class="mt-2 d-none">
+                            <form action="<?php echo e(route('comments.store', $post)); ?>" method="POST">
+                                <?php echo csrf_field(); ?>
+                                <input type="hidden" name="parent_comment_id" value="<?php echo e($comment->id); ?>">
+                                <div class="input-group">
+                                    <input type="text" name="content" class="form-control form-control-sm" placeholder="Write a reply..." required>
+                                    <button type="submit" class="btn btn-primary btn-sm">Reply</button>
+                                </div>
                             </form>
                         </div>
                     <?php endif; ?>
                 </div>
+
+                <?php if($comment->replies->count() > 0): ?>
+                    <div class="ms-5 mb-3 pe-3">
+                        <?php $__currentLoopData = $comment->replies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $reply): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <div class="bg-light p-2 rounded mb-2 border-start border-primary border-4">
+                                <div class="d-flex align-items-center mb-1">
+                                    <img src="<?php echo e($reply->user->profile_picture ? asset('storage/' . $reply->user->profile_picture) : 'https://via.placeholder.com/24'); ?>" class="avatar me-2" style="width: 24px; height: 24px;">
+                                    <small class="fw-bold"><?php echo e($reply->user->name); ?></small>
+                                    <small class="text-muted ms-2"><?php echo e($reply->created_at->diffForHumans()); ?></small>
+                                </div>
+                                <p class="mb-0 small"><?php echo e($reply->content); ?></p>
+                            </div>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </div>
+                <?php endif; ?>
             </div>
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     </div>
 </div>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection('scripts'); ?>
+<script>
+function toggleReplyForm(commentId) {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    form.classList.toggle('d-none');
+}
+
+async function handleEngagement(btn, type) {
+    const postId = btn.getAttribute('data-post-id');
+    const url = `/posts/${postId}/${type}`;
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
+                'Accept': 'application/json'
+            }
+        });
+        const data = await response.json();
+        
+        const postCard = btn.closest('.card');
+        const likeBtn = postCard.querySelector('.like-btn');
+        const dislikeBtn = postCard.querySelector('.dislike-btn');
+        
+        if(data.liked) likeBtn.classList.add('liked'); else likeBtn.classList.remove('liked');
+        if(data.disliked) dislikeBtn.classList.add('liked'); else dislikeBtn.classList.remove('liked');
+        
+        likeBtn.querySelector('span').textContent = `Like (${data.likes_count})`;
+        dislikeBtn.querySelector('span').textContent = `Dislike (${data.dislikes_count})`;
+    } catch (error) {
+        console.error('Engagement failed:', error);
+    }
+}
+
+async function handleCommentLike(btn, commentId) {
+    const url = `/comments/${commentId}/like`;
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
+                'Accept': 'application/json'
+            }
+        });
+        const data = await response.json();
+        
+        if(data.liked) btn.classList.add('text-danger'); else btn.classList.remove('text-danger');
+        btn.innerHTML = `<i class="fas fa-heart"></i> ${data.likes_count}`;
+    } catch (error) {
+        console.error('Comment like failed:', error);
+    }
+}
+</script>
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\banta\resources\views/posts/show.blade.php ENDPATH**/ ?>

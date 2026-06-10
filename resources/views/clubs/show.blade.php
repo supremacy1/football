@@ -155,7 +155,7 @@
                                     <img src="{{ $member->profile_picture ? asset('storage/' . $member->profile_picture) : 'https://via.placeholder.com/32' }}" alt="{{ $member->name }}" class="avatar me-2" style="width: 32px; height: 32px;">
                                     <div>
                                         <h6 class="mb-0">{{ $member->name }}</h6>
-                                        <small class="text-muted">@{{ $member->username }}</small>
+                                        <small class="text-muted">{{ '@' . $member->username }}</small>
                                     </div>
                                 </div>
                             </a>

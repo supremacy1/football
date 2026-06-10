@@ -175,10 +175,16 @@
                             <a class="nav-link" href="{{ route('feed') }}"><i class="fas fa-home"></i> Feed</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="{{ route('matches.live') }}"><i class="fas fa-broadcast-tower text-danger"></i> Live</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="{{ route('clubs.index') }}"><i class="fas fa-users"></i> Clubs</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('profile.edit') }}"><i class="fas fa-user"></i> Profile</a>
+                            <a class="nav-link d-flex align-items-center" href="{{ route('profile.show', auth()->user()) }}">
+                                <img src="{{ auth()->user()->profile_picture ? asset('storage/' . auth()->user()->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&size=24&background=random' }}" class="rounded-circle me-1" style="width: 24px; height: 24px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                                <span>{{ explode(' ', auth()->user()->name)[0] }}</span>
+                            </a>
                         </li>
                         <li class="nav-item">
                             <form action="{{ route('logout') }}" method="POST" class="d-inline">
@@ -201,63 +207,72 @@
 
     <main class="py-4">
         <div class="container">
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>Errors!</strong>
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-
-            @if (session('success_modal'))
-                <div class="modal fade" id="sessionSuccessModal" tabindex="-1" aria-labelledby="sessionSuccessModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="sessionSuccessModalLabel">Success</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p>{{ session('success_modal') }}</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continue</button>
-                            </div>
-                        </div>
+            <div class="row">
+                @auth
+                    <!-- Main Content -->
+                    <div class="col-12">
+                @else
+                    <div class="col-12">
+                @endauth
+                        @yield('content')
                     </div>
                 </div>
-                <script>
-                    window.addEventListener('DOMContentLoaded', function() {
-                        var successModal = new bootstrap.Modal(document.getElementById('sessionSuccessModal'));
-                        successModal.show();
-                    });
-                </script>
-            @endif
-
-            @if (session('success'))
-                <script>
-                    window.addEventListener('DOMContentLoaded', function() {
-                        alert(@json(session('success')));
-                    });
-                </script>
-            @endif
-
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-
-            @yield('content')
+            </div>
         </div>
     </main>
 
+    <!-- Generic Alert Modal -->
+    <div class="modal fade" id="genericAlertModal" tabindex="-1" aria-labelledby="genericAlertModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" id="genericAlertModalHeader">
+                    <h5 class="modal-title" id="genericAlertModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="genericAlertModalBody">
+                    <!-- Message content will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalEl = document.getElementById('genericAlertModal');
+            const genericAlertModal = new bootstrap.Modal(modalEl);
+            const modalTitle = document.getElementById('genericAlertModalLabel');
+            const modalBody = document.getElementById('genericAlertModalBody');
+            const modalHeader = document.getElementById('genericAlertModalHeader');
+
+            window.showModalAlert = function(title, message, isError = false) {
+                modalTitle.textContent = title;
+                modalBody.innerHTML = typeof message === 'string' ? `<p>${message}</p>` : message;
+                modalHeader.className = 'modal-header ' + (isError ? 'bg-danger' : 'bg-success') + ' text-white';
+                genericAlertModal.show();
+            };
+
+            @if (session('success_modal'))
+                showModalAlert('Success', '{{ session('success_modal') }}');
+            @endif
+
+            @if (session('error'))
+                showModalAlert('Error', '{{ session('error') }}', true);
+            @endif
+
+            @if ($errors->any())
+                let errorHtml = '<ul class="mb-0">';
+                @foreach ($errors->all() as $error)
+                    errorHtml += '<li>{{ $error }}</li>';
+                @endforeach
+                errorHtml += '</ul>';
+                showModalAlert('Validation Error', errorHtml, true);
+            @endif
+        });
+    </script>
     @yield('scripts')
 </body>
 </html>
