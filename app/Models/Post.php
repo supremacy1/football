@@ -36,6 +36,16 @@ class Post extends Model
         });
     }
 
+    /**
+     * Retrieve the model for a bound value.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->withoutGlobalScope('no_club')
+            ->where($field ?? $this->getRouteKeyName(), $value)
+            ->firstOrFail();
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

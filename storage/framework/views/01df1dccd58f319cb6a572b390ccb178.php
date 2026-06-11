@@ -143,36 +143,121 @@
                         <?php endif; ?>
                     </div>
 
+                    <div class="post-actions px-3 py-2 border-top d-flex gap-4">
+                        <?php if(auth()->guard()->check()): ?>
+                            <form action="<?php echo e(route('posts.like', $post)); ?>" method="POST" class="d-inline engagement-form" data-type="like">
+                                <?php echo csrf_field(); ?>
+                                <button type="submit" class="btn btn-link btn-sm p-0 text-decoration-none <?php echo e($post->isLikedBy(auth()->user()) ? 'text-primary fw-bold' : 'text-muted'); ?>">
+                                    <i class="fas fa-thumbs-up"></i> <span class="count"><?php echo e($post->likes_count ?? 0); ?></span>
+                                </button>
+                            </form>
+                            <form action="<?php echo e(route('posts.dislike', $post)); ?>" method="POST" class="d-inline engagement-form" data-type="dislike">
+                                <?php echo csrf_field(); ?>
+                                <button type="submit" class="btn btn-link btn-sm p-0 text-decoration-none <?php echo e($post->isDislikedBy(auth()->user()) ? 'text-danger fw-bold' : 'text-muted'); ?>">
+                                    <i class="fas fa-thumbs-down"></i> <span class="count"><?php echo e($post->dislikes_count ?? 0); ?></span>
+                                </button>
+                            </form>
+                        <?php else: ?>
+                            <span class="text-muted small"><i class="far fa-thumbs-up"></i> <?php echo e($post->likes_count ?? 0); ?></span>
+                            <span class="text-muted small"><i class="far fa-thumbs-down"></i> <?php echo e($post->dislikes_count ?? 0); ?></span>
+                        <?php endif; ?>
+                        
+                        <button class="btn btn-link btn-sm p-0 text-decoration-none text-muted">
+                            <i class="far fa-comment"></i> <?php echo e($post->comments->count()); ?>
+
+                        </button>
+
+                        <form action="<?php echo e(route('posts.share', $post)); ?>" method="POST" class="d-inline ms-auto">
+                            <?php echo csrf_field(); ?>
+                            <button type="submit" class="btn btn-link btn-sm p-0 text-decoration-none text-muted">
+                                <i class="far fa-share-square"></i> Share
+                            </button>
+                        </form>
+                    </div>
+
                     <div class="post-footer border-top p-0">
-                        <div class="p-3 bg-light">
-                            <h6 class="small fw-bold mb-3"><i class="fas fa-comments me-1"></i> Discussion</h6>
-                            
-                            <div class="comment-list mb-3">
+                        <div class="p-3 bg-white">
+                            <?php if(auth()->guard()->check()): ?>
+                                <div class="d-flex mb-3">
+                                    <img src="<?php echo e(auth()->user()->profile_picture ? asset('storage/' . auth()->user()->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name)); ?>" class="avatar-sm rounded-circle me-2" style="width: 32px; height: 32px;">
+                                    <form action="<?php echo e(route('comments.store', $post)); ?>" method="POST" class="flex-grow-1">
+                                        <?php echo csrf_field(); ?>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" name="content" class="form-control bg-light border-0" placeholder="Write a comment..." required>
+                                            <button class="btn btn-primary px-3" type="submit">Post</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="comment-list">
                                 <?php $__empty_2 = true; $__currentLoopData = $post->comments->take(5); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $comment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_2 = false; ?>
                                     <div class="d-flex mb-2">
                                         <img src="<?php echo e(($comment->user && $comment->user->profile_picture) ? asset('storage/' . $comment->user->profile_picture) : 'https://via.placeholder.com/32'); ?>" class="avatar-sm rounded-circle me-2" style="width: 32px; height: 32px;">
-                                        <div class="bg-white p-2 rounded shadow-sm flex-grow-1 border">
-                                            <div class="d-flex justify-content-between">
-                                                <small class="fw-bold text-primary"><?php echo e(optional($comment->user)->name ?? 'Deleted User'); ?></small>
+                                        <div class="flex-grow-1">
+                                            <div class="bg-light p-2 rounded">
+                                                <div class="d-flex justify-content-between">
+                                                    <a href="<?php echo e($comment->user ? route('profile.show', $comment->user) : '#'); ?>" class="text-decoration-none small fw-bold text-dark">
+                                                        <?php echo e(optional($comment->user)->name ?? 'Deleted User'); ?>
+
+                                                    </a>
+                                                </div>
+                                                <p class="mb-0 small"><?php echo e($comment->content); ?></p>
+                                            </div>
+                                            <div class="mt-1 d-flex align-items-center gap-3 px-1">
+                                                <?php if(auth()->guard()->check()): ?>
+                                                    <form action="<?php echo e(route('comments.like', $comment)); ?>" method="POST" class="d-inline">
+                                                        <?php echo csrf_field(); ?>
+                                                        <button type="submit" class="btn btn-link p-0 btn-sm text-decoration-none <?php echo e($comment->isLikedBy(auth()->user()) ? 'text-primary fw-bold' : 'text-muted'); ?>" style="font-size: 0.7rem;">
+                                                            Like <?php echo e($comment->likes_count > 0 ? $comment->likes_count : ''); ?>
+
+                                                        </button>
+                                                    </form>
+                                                <button class="btn btn-link p-0 btn-sm text-decoration-none text-muted reply-toggle-btn" data-comment-id="<?php echo e($comment->id); ?>" style="font-size: 0.7rem;">Reply</button>
+                                                <?php endif; ?>
                                                 <small class="text-muted" style="font-size: 0.7rem;"><?php echo e($comment->created_at->diffForHumans()); ?></small>
                                             </div>
-                                            <p class="mb-0 small"><?php echo e($comment->content); ?></p>
+
+                                        
+                                        <?php if(auth()->guard()->check()): ?>
+                                            <div class="reply-form-container mt-2 d-none" id="reply-form-<?php echo e($comment->id); ?>">
+                                                <form action="<?php echo e(route('comments.store', $post)); ?>" method="POST">
+                                                    <?php echo csrf_field(); ?>
+                                                    <input type="hidden" name="parent_comment_id" value="<?php echo e($comment->id); ?>">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" name="content" class="form-control bg-white border" placeholder="Write a reply..." required>
+                                                        <button class="btn btn-primary px-2" type="submit">Reply</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        
+                                        <?php if($comment->replies->count() > 0): ?>
+                                            <div class="replies-container mt-2 ms-2 ps-2 border-start">
+                                                <?php $__currentLoopData = $comment->replies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $reply): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                    <div class="d-flex mb-2">
+                                                        <img src="<?php echo e(($reply->user && $reply->user->profile_picture) ? asset('storage/' . $reply->user->profile_picture) : 'https://via.placeholder.com/24'); ?>" class="avatar-xs rounded-circle me-2" style="width: 24px; height: 24px;">
+                                                        <div class="flex-grow-1">
+                                                            <div class="bg-light p-2 rounded">
+                                                                <a href="<?php echo e($reply->user ? route('profile.show', $reply->user) : '#'); ?>" class="text-decoration-none small fw-bold text-dark" style="font-size: 0.75rem;">
+                                                                    <?php echo e(optional($reply->user)->name ?? 'Deleted User'); ?>
+
+                                                                </a>
+                                                                <p class="mb-0 small" style="font-size: 0.8rem;"><?php echo e($reply->content); ?></p>
+                                                            </div>
+                                                            <small class="text-muted" style="font-size: 0.65rem;"><?php echo e($reply->created_at->diffForHumans()); ?></small>
+                                                        </div>
+                                                    </div>
+                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                            </div>
+                                        <?php endif; ?>
                                         </div>
                                     </div>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_2): ?>
                                     <p class="text-muted small mb-0 italic">No comments yet. Start the conversation!</p>
                                 <?php endif; ?>
                             </div>
-
-                            <?php if(auth()->guard()->check()): ?>
-                                <form action="<?php echo e(route('comments.store', $post)); ?>" method="POST">
-                                    <?php echo csrf_field(); ?>
-                                    <div class="input-group input-group-sm">
-                                        <input type="text" name="content" class="form-control" placeholder="Write a comment..." required>
-                                        <button class="btn btn-primary" type="submit">Reply</button>
-                                    </div>
-                                </form>
-                            <?php endif; ?>
                         </div>
                         
                         <div class="p-2 text-center border-top">
@@ -284,6 +369,70 @@
         </div>
     <?php endif; ?>
 <?php endif; ?>
+
+<?php $__env->startSection('scripts'); ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle Like/Dislike asynchronously
+    document.querySelectorAll('.engagement-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const url = this.action;
+            const type = this.dataset.type;
+            const button = this.querySelector('button');
+            const countSpan = this.querySelector('.count');
+            const oppositeForm = this.parentElement.querySelector(`.engagement-form[data-type="${type === 'like' ? 'dislike' : 'like'}"]`);
+            const oppositeButton = oppositeForm ? oppositeForm.querySelector('button') : null;
+            const oppositeCount = oppositeForm ? oppositeForm.querySelector('.count') : null;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
+                    'Accept': 'text/html', // Many controllers return back(), which is a redirect to HTML
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(() => {
+                // UI Logic: Toggle classes and adjust counts locally to simulate "silent" update
+                const isActive = button.classList.contains(type === 'like' ? 'text-primary' : 'text-danger');
+                let currentCount = parseInt(countSpan.textContent);
+
+                if (isActive) {
+                    button.classList.remove(type === 'like' ? 'text-primary' : 'text-danger', 'fw-bold');
+                    button.classList.add('text-muted');
+                    countSpan.textContent = Math.max(0, currentCount - 1);
+                } else {
+                    button.classList.add(type === 'like' ? 'text-primary' : 'text-danger', 'fw-bold');
+                    button.classList.remove('text-muted');
+                    countSpan.textContent = currentCount + 1;
+
+                    // If the other action was active, deactivate it
+                    if (oppositeButton && oppositeButton.classList.contains(type === 'like' ? 'text-danger' : 'text-primary')) {
+                        oppositeButton.classList.remove('text-primary', 'text-danger', 'fw-bold');
+                        oppositeButton.classList.add('text-muted');
+                        oppositeCount.textContent = Math.max(0, parseInt(oppositeCount.textContent) - 1);
+                    }
+                }
+            }).catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Handle Reply Toggle
+    document.querySelectorAll('.reply-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+            const form = document.getElementById(`reply-form-${commentId}`);
+            if (form) {
+                form.classList.toggle('d-none');
+                if (!form.classList.contains('d-none')) {
+                    form.querySelector('input').focus();
+                }
+            }
+        });
+    });
+});
+</script>
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\banta\resources\views/clubs/show.blade.php ENDPATH**/ ?>

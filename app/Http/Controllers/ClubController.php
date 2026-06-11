@@ -19,7 +19,7 @@ class ClubController extends Controller
     public function show(Club $club)
     {
         $club->load(['members', 'posts' => function ($query) {
-            $query->with(['user', 'comments.user'])->orderBy('created_at', 'desc')->limit(10);
+            $query->with(['user', 'comments.user', 'comments.replies.user', 'likes', 'comments.likes'])->orderBy('created_at', 'desc')->limit(10);
         }, 'players'])->loadCount(['members', 'posts', 'players']);
 
         // Fetch upcoming matches for the club
