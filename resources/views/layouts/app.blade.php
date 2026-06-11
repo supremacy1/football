@@ -181,6 +181,9 @@
                             <a class="nav-link" href="{{ route('clubs.index') }}"><i class="fas fa-users"></i> Clubs</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="{{ route('betting.index') }}"><i class="fas fa-coins"></i> Betting</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link d-flex align-items-center" href="{{ route('profile.show', auth()->user()) }}">
                                 <img src="{{ auth()->user()->profile_picture ? asset('storage/' . auth()->user()->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&size=24&background=random' }}" class="rounded-circle me-1" style="width: 24px; height: 24px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
                                 <span>{{ explode(' ', auth()->user()->name)[0] }}</span>

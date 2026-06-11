@@ -103,4 +103,9 @@ class User extends Authenticatable
     {
         return $this->following()->count();
     }
+
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
 }

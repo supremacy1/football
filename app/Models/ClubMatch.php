@@ -42,6 +42,11 @@ class ClubMatch extends Model
         return $this->belongsTo(Club::class, 'away_club_id');
     }
 
+    public function bets()
+    {
+        return $this->hasMany(Bet::class, 'match_id');
+    }
+
     public function posts()
     {
         return $this->hasMany(Post::class)->withoutGlobalScope('no_club');

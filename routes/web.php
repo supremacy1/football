@@ -9,6 +9,7 @@ use App\Http\Controllers\Post\PostEngagementController;
 use App\Http\Controllers\Post\CommentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ClubController;
+use App\Http\Controllers\BetController;
 use App\Http\Controllers\LiveMatchController;
 
 Route::get('/', function () {
@@ -71,6 +72,13 @@ Route::middleware('auth')->group(function () {
     Route::get('matches/create', [ClubController::class, 'createMatch'])->name('matches.create');
     Route::post('matches', [ClubController::class, 'storeMatch'])->name('matches.store');
     Route::put('matches/{match}/score', [ClubController::class, 'updateMatchScore'])->name('matches.updateScore');
+
+    // Betting Routes
+    Route::get('betting', [BetController::class, 'index'])->name('betting.index');
+    Route::post('betting/{match}', [BetController::class, 'placeBet'])->name('betting.store');
+    Route::post('betting/confirm/{bet}', [BetController::class, 'confirm'])->name('betting.confirm');
+    Route::post('betting/lock/{bet}', [BetController::class, 'lock'])->name('betting.lock');
+    Route::post('betting/claim/{bet}', [BetController::class, 'claim'])->name('betting.claim');
 
     // Live Matches Route
     Route::get('live', [LiveMatchController::class, 'index'])->name('matches.live');
