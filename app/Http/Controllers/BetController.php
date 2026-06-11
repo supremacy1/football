@@ -3,25 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bet;
+use App\Models\Club;
 use App\Models\ClubMatch;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class BetController extends Controller
 {
     public function index()
     {
-        $matches = ClubMatch::where('status', 'scheduled')
-            ->whereBetween('match_date', [now(), now()->addHours(24)])
-            ->with(['homeClub', 'awayClub'])
-            ->withCount(['bets as pending_bets_count' => function ($query) {
-                $query->where('status', 'pending')
-                      ->where('user_id', '!=', Auth::id());
-            }])
-            ->orderBy('match_date', 'asc')
-            ->get();
+        $fixtures = cache()->remember('betting_fixtures', 15, function () {
+            return $this->fetchUpcomingFixtures();
+        });
+
+        $matches = $this->syncAndGetMatches($fixtures);
 
         // DASHBOARD: Keep bets visible until finished and results are claimed
         $myBets = Bet::where('user_id', Auth::id())
@@ -30,6 +30,76 @@ class BetController extends Controller
             ->get();
 
         return view('betting.index', compact('matches', 'myBets'));
+    }
+
+    /**
+     * Fetch upcoming fixtures directly from the API.
+     */
+    private function fetchUpcomingFixtures()
+    {
+        $apiKey = env('API_SPORTS_KEY');
+        if (!$apiKey) return [];
+
+        $fixtures = [];
+        $dates = [now()->format('Y-m-d'), now()->addDay()->format('Y-m-d')];
+
+        foreach ($dates as $date) {
+            $response = Http::withHeaders(['x-apisports-key' => $apiKey])
+                ->get("https://v3.football.api-sports.io/fixtures", ['date' => $date]);
+
+            if ($response->successful()) {
+                $fixtures = array_merge($fixtures, $response->json()['response'] ?? []);
+            }
+        }
+
+        return collect($fixtures)->filter(function ($item) {
+            $date = Carbon::parse($item['fixture']['date']);
+            return $date->isBetween(now(), now()->addHours(24)) &&
+                   ($item['fixture']['status']['short'] ?? '') === 'NS';
+        })->sortBy('fixture.timestamp')->values()->toArray();
+    }
+
+    /**
+     * Sync API fixtures with local matches table and return the collection.
+     */
+    private function syncAndGetMatches($fixtures)
+    {
+        $syncedMatches = collect();
+
+        foreach ($fixtures as $item) {
+            // We sync the match data into our local 'matches' table so we can track bets.
+            // This ensures that 'match_id' exists for the Bet model relationships.
+            $homeClub = Club::firstOrCreate(
+                ['name' => $item['teams']['home']['name']],
+                ['slug' => Str::slug($item['teams']['home']['name'])]
+            );
+            $awayClub = Club::firstOrCreate(
+                ['name' => $item['teams']['away']['name']],
+                ['slug' => Str::slug($item['teams']['away']['name'])]
+            );
+
+            $match = ClubMatch::updateOrCreate(
+                [
+                    'home_club_id' => $homeClub->id,
+                    'away_club_id' => $awayClub->id,
+                    'match_date'   => Carbon::parse($item['fixture']['date']),
+                ],
+                [
+                    'venue'  => $item['fixture']['venue']['name'] ?? 'TBD',
+                    'status' => 'scheduled',
+                    'league' => $item['league']['name'] ?? null,
+                ]
+            );
+
+            // Eager load necessary relations and open bets
+            $match->load(['homeClub', 'awayClub', 'bets' => function ($query) {
+                $query->where('status', 'pending')->where('user_id', '!=', Auth::id());
+            }]);
+
+            $syncedMatches->push($match);
+        }
+
+        return $syncedMatches;
     }
 
     public function placeBet(Request $request, ClubMatch $match)
@@ -46,7 +116,7 @@ class BetController extends Controller
             return back()->with('error', 'Insufficient wallet balance to place this bet.');
         }
 
-        return DB::transaction(function () use ($request, $match, $user) {
+        return DB::transaction(function () use ($request, $match, $user, $wallet) {
             // Try to find a partner
             $partnerBet = Bet::where('match_id', $match->id)
                 ->where('amount', $request->amount)
@@ -54,35 +124,51 @@ class BetController extends Controller
                 ->where('status', 'pending')
                 ->where('user_id', '!=', $user->id)
                 ->first();
-            
-            $bet = Bet::create([
+
+            if ($partnerBet) {
+                // Check if the creator still has enough balance
+                $partnerWallet = Wallet::where('user_id', $partnerBet->user_id)->first();
+                if (!$partnerWallet || $partnerWallet->balance < $request->amount) {
+                    // If partner balance dropped, we can't match. Cancel their bet or just error out.
+                    return back()->with('error', 'The open bet is no longer valid (insufficient partner funds).');
+                }
+
+                // Deduct from both
+                $wallet->decrement('balance', $request->amount);
+                $partnerWallet->decrement('balance', $request->amount);
+
+                $bet = Bet::create([
+                    'match_id' => $match->id,
+                    'user_id' => $user->id,
+                    'amount' => (float) $request->amount,
+                    'selection' => $request->selection,
+                    'status' => 'locked',
+                    'partner_id' => $partnerBet->user_id,
+                ]);
+
+                $partnerBet->update([
+                    'status' => 'locked',
+                    'partner_id' => $user->id
+                ]);
+                
+                return back()->with('success', 'Bet matched and locked! Funds have been deducted.');
+            }
+
+            // Create pending bet (no deduction yet)
+            Bet::create([
                 'match_id' => $match->id,
                 'user_id' => $user->id,
                 'amount' => (float) $request->amount,
                 'selection' => $request->selection,
-                'status' => $partnerBet ? 'matched' : 'pending',
-                'partner_id' => $partnerBet ? $partnerBet->user_id : null,
+                'status' => 'pending',
             ]);
 
-            if ($partnerBet) {
-                $partnerBet->update([
-                    'status' => 'matched',
-                    'partner_id' => $user->id
-                ]);
-                
-                return back()->with('success', 'Partner found! Match matched. Please confirm and lock your bet before kickoff.');
-            }
-
-            return back()->with('success', 'Bet placed! Other members will now see a notice to match your stake.');
+            return back()->with('success', 'Bet placed! It will appear as pending until someone matches it.');
         });
     }
 
     public function confirm(Bet $bet)
     {
-        if ($bet->user_id !== Auth::id()) abort(403);
-        
-        $bet->update(['status' => 'confirmed']);
-        
         // If both confirmed
         $partnerBet = Bet::where('match_id', $bet->match_id)
             ->where('user_id', $bet->partner_id)
@@ -98,20 +184,8 @@ class BetController extends Controller
 
     public function lock(Bet $bet)
     {
-        if ($bet->user_id !== Auth::id()) abort(403);
-
-        return DB::transaction(function () use ($bet) {
-            $wallet = Wallet::where('user_id', $bet->user_id)->first();
-            
-            if ($wallet->balance < $bet->amount) {
-                return back()->with('error', 'Insufficient balance to lock.');
-            }
-
-            $wallet->decrement('balance', $bet->amount);
-            $bet->update(['status' => 'locked']);
-
-            return back()->with('success', 'Game locked! Funds debited.');
-        });
+        // Logic moved to placeBet for automatic matching
+        return back();
     }
 
     public function claim(Bet $bet)
@@ -134,8 +208,8 @@ class BetController extends Controller
         if ($bet->selection === $winner) {
             return DB::transaction(function () use ($bet) {
                 $totalPool = $bet->amount * 2;
-                $commission = $totalPool * 0.10; // 10% commission
-                $payout = $totalPool - $commission;
+                $commission = $totalPool * 0.05; // 5% commission
+                $payout = $totalPool - $commission; 
 
                 $wallet = Wallet::where('user_id', $bet->user_id)->first();
                 $wallet->increment('balance', $payout);

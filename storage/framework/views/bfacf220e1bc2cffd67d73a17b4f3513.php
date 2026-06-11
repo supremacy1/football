@@ -28,18 +28,31 @@
                                 <div class="badge bg-light text-muted mb-1"><?php echo e($match->match_date->format('d M, H:i')); ?></div>
                                 <div class="fw-bold my-1 text-primary">VS</div>
                                 
-                                <?php if($match->pending_bets_count > 0): ?>
-                                    <div class="mb-3">
-                                        <span class="badge bg-warning text-dark animate-pulse py-2">
-                                            <i class="fas fa-handshake"></i> <?php echo e($match->pending_bets_count); ?> <?php echo e(Str::plural('Partner', $match->pending_bets_count)); ?> Waiting!
-                                        </span>
-                                        <div class="small text-muted mt-1" style="font-size: 0.7rem;">Match their stake to play instantly</div>
+                                <?php if($match->bets->count() > 0): ?>
+                                    <div class="mt-2 text-start">
+                                        <p class="small fw-bold mb-1 text-center">Open Bets:</p>
+                                        <div class="d-flex flex-column gap-1">
+                                            <?php $__currentLoopData = $match->bets; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $openBet): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <form action="<?php echo e(route('betting.store', $match)); ?>" method="POST">
+                                                    <?php echo csrf_field(); ?>
+                                                    <input type="hidden" name="amount" value="<?php echo e($openBet->amount); ?>">
+                                                    <input type="hidden" name="selection" value="<?php echo e($openBet->selection === 'home' ? 'away' : 'home'); ?>">
+                                                    <button type="submit" class="btn btn-xs btn-outline-warning w-100 py-1" style="font-size: 0.7rem;">
+                                                        Match ₦<?php echo e(number_format($openBet->amount)); ?> 
+                                                        (<?php echo e($openBet->selection === 'home' ? $match->awayClub->name : $match->homeClub->name); ?> Win)
+                                                    </button>
+                                                </form>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </div>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="mb-2">
+                                        <button class="btn btn-sm btn-success px-4 rounded-pill" data-bs-toggle="modal" data-bs-target="#betModal<?php echo e($match->id); ?>">
+                                            Start a Bet
+                                        </button>
                                     </div>
                                 <?php endif; ?>
 
-                                <button class="btn btn-sm btn-success px-4 rounded-pill" data-bs-toggle="modal" data-bs-target="#betModal<?php echo e($match->id); ?>">
-                                    Bet Now
-                                </button>
                             </div>
                             <div class="col-4">
                                 <img src="<?php echo e(($match->awayClub && $match->awayClub->logo) ? asset('storage/'.$match->awayClub->logo) : 'https://via.placeholder.com/40'); ?>" class="avatar mb-2" style="width: 50px; height: 50px; object-fit: contain;">
