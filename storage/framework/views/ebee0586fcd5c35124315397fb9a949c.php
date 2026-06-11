@@ -174,6 +174,32 @@
                                     <p class="mb-0"><strong>Joined:</strong> <?php echo e($user->created_at->format('M d, Y')); ?></p>
                                 </div>
                             </div>
+
+                            <?php
+                                $wallet = \DB::table('wallets')->where('user_id', $user->id)->first();
+                            ?>
+
+                            <?php if($wallet): ?>
+                                <div class="card sidebar-card border-success shadow-sm">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0"><i class="fas fa-wallet me-2"></i> Football Wallet</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="text-center mb-3">
+                                            <small class="text-muted text-uppercase d-block">Available Balance</small>
+                                            <h4 class="fw-bold text-success mb-0">₦<?php echo e(number_format($wallet->balance, 2)); ?></h4>
+                                        </div>
+                                        <div class="p-2 bg-light rounded border mb-3">
+                                            <p class="mb-1 small"><strong>Bank:</strong> <?php echo e($wallet->paystack_bank_name); ?></p>
+                                            <p class="mb-1 small"><strong>Account:</strong> <?php echo e($wallet->paystack_account_number); ?></p>
+                                            <p class="mb-0 text-muted" style="font-size: 0.7rem;"><?php echo e($wallet->paystack_account_name); ?></p>
+                                        </div>
+                                        <button class="btn btn-football w-100 btn-sm text-uppercase fw-bold" onclick="alert('Withdrawal request initiated!')">
+                                            Withdraw Funds
+                                        </button>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         <?php endif; ?>
                     <?php endif; ?>
                 </div>

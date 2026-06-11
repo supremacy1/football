@@ -1,87 +1,114 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold"><span class="text-danger">●</span> Live & Today's Matches</h2>
-        <!-- <span class="badge bg-dark">Powered by Free API Live Football Data</span> -->
-    </div>
+@section('title', 'Live Match Fixtures')
 
-    @if(isset($error))
-        <div class="alert alert-warning">{{ $error }}</div>
-    @endif
-
-    <div class="row">
-        @forelse($matches as $match)
-            @php
-                $statusType = strtolower($match['status']['type'] ?? '');
-                $isLive = $statusType === 'inprogress';
-                $isFinished = $statusType === 'finished';
-                $leagueName = $match['league']['name'] ?? 'Unknown League';
-            @endphp
-            <div class="col-md-12 mb-3">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                        <small class="text-muted">{{ $leagueName }}</small>
-                        @if($isLive)
-                            <span class="badge bg-danger animate-pulse">LIVE {{ $match['status']['status'] }}</span>
-                        @elseif($isFinished)
-                            <span class="badge bg-secondary">FT</span>
-                        @else
-                            <span class="badge bg-primary">{{ $match['status']['status'] ?? 'Scheduled' }}</span>
-                        @endif
-                    </div>
-                    <div class="card-body">
-                        <div class="row align-items-center text-center">
-                            <div class="col-4">
-                                <img src="{{ $match['homeTeam']['logo'] ?? '' }}" alt="home" style="width: 40px; height: 40px;">
-                                <p class="mt-2 mb-0 fw-bold small">{{ $match['homeTeam']['name'] }}</p>
-                            </div>
-                            <div class="col-4">
-                                <h3 class="fw-bold mb-0">
-                                    {{ $match['homeScore']['current'] ?? 0 }} - {{ $match['awayScore']['current'] ?? 0 }}
-                                </h3>
-                            </div>
-                            <div class="col-4">
-                                <img src="{{ $match['awayTeam']['logo'] ?? '' }}" alt="away" style="width: 40px; height: 40px;">
-                                <p class="mt-2 mb-0 fw-bold small">{{ $match['awayTeam']['name'] }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    {{-- The 'Free API Live Football Data' might not provide detailed 'events' in the same format as API-Football.
-                         Check the actual API response (using dd($response->json()) in controller) for the correct keys.
-                         Assuming 'description' and 'minute' for now based on common API structures. --}}
-                    @if(isset($match['events']) && is_array($match['events']) && count($match['events']) > 0)
-                        @php $latestEvent = end($match['events']); @endphp
-                        <div class="card-footer bg-light py-2">
-                            <small class="text-muted">Latest: {{ $latestEvent['description'] ?? 'Event' }} ({{ $latestEvent['minute'] ?? '' }}')</small>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        @empty
-            <div class="col-12 text-center py-5">
-                <div class="bg-light rounded p-5">
-                    <p class="text-muted mb-0">No matches found for today.</p>
-                </div>
-            </div>
-        @endforelse
-    </div>
-    <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-     
-        <span class="badge bg-dark">Powered by Free API Live Football Data</span>
-    </div>
-</div>
-
+@section('styles')
 <style>
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
-    }
-    .animate-pulse {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
+    body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #1c1e21; margin: 20px; }
+    h2 { color: #3d195d; text-align: center; margin-bottom: 25px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+    .container { max-width: 900px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background-color: #3d195d; color: white; padding: 15px; font-size: 0.75rem; text-transform: uppercase; text-align: center; }
+    td { padding: 16px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    tr:hover { background-color: #f8f9fa; }
+    
+    .team-row { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 0.95rem; }
+    .team-logo { width: 28px; height: 28px; object-fit: contain; }
+    .text-right { text-align: right; justify-content: flex-end; }
+    
+    .score-box { background: #222; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-family: 'Courier New', monospace; display: inline-block; min-width: 50px; text-align: center; font-size: 1.1rem; }
+    .vs { color: #888; font-weight: 400; font-size: 0.8rem; }
+
+    .status-badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; background: #eaedef; color: #4b4f56; font-weight: bold; display: inline-block; }
+    .status-live { background: #e91e63; color: white; animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate; }
+    
+    @keyframes blinker { from { opacity: 1; } to { opacity: 0.4; } }
+    
+    .match-time { font-size: 0.75rem; color: #65676b; display: block; margin-top: 4px; }
+    .round-info { font-size: 0.7rem; color: #bcc0c4; text-transform: uppercase; font-weight: bold; }
 </style>
+@endsection
+
+@section('content')
+    <h2 class="mt-4">Live Matches / Fixture</h2>
+    <div class="container">
+    @if ($error)
+        <div class="alert alert-danger" role="alert" style="padding: 40px; text-align: center;">
+            <strong>Error:</strong> {{ $error }}
+            @if (isset($rawData) && $rawData)
+                <pre class="text-start mt-3">{{ json_encode($rawData, JSON_PRETTY_PRINT) }}</pre>
+            @endif
+        </div>
+    @elseif (empty($matches))
+        <p style="padding: 40px; text-align: center; color: #666;">No matches scheduled for today.</p>
+        @if (isset($rawData) && $rawData)
+            <div style="background: #eee; padding: 10px; border: 1px solid #ccc;">
+                <strong>Debug Information (Raw API Response):</strong>
+                <pre>{{ json_encode($rawData, JSON_PRETTY_PRINT) }}</pre>
+            </div>
+        @endif
+    @else
+    <table>
+        <thead>
+            <tr>
+                <th width="15%">Time</th>
+                <th width="30%" class="text-right">Home</th>
+                <th width="10%">Score</th>
+                <th width="30%">Away</th>
+                <th width="15%">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($matches as $match)
+                @php 
+                    $statusShort = $match['fixture']['status']['short'] ?? 'N/A';
+                    $isLive = in_array($statusShort, ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE']);
+                    $homeTeam = $match['teams']['home'] ?? ['name' => 'Unknown', 'logo' => ''];
+                    $awayTeam = $match['teams']['away'] ?? ['name' => 'Unknown', 'logo' => ''];
+                    $homeScore = $match['goals']['home'] ?? null;
+                    $awayScore = $match['goals']['away'] ?? null;
+                    $matchTime = isset($match['fixture']['timestamp']) ? \Carbon\Carbon::createFromTimestamp($match['fixture']['timestamp'])->format('H:i') : '--:--';
+                    $roundInfo = str_replace('Regular Season - ', 'R', $match['league']['round'] ?? '');
+                @endphp
+                <tr>
+                    <td style="text-align: center;">
+                        <span class="round-info">{{ $roundInfo }}</span>
+                        <span class="match-time">{{ $matchTime }}</span>
+                    </td>
+                    <td>
+                        <div class="team-row text-right">
+                            <span>{{ $homeTeam['name'] }}</span>
+                            <img class="team-logo" src="{{ $homeTeam['logo'] }}" alt="logo">
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        <div class="score-box">
+                        @if ($homeScore !== null && $awayScore !== null)
+                            {{ $homeScore }} - {{ $awayScore }}
+                        @else
+                            <span class="vs">VS</span>
+                        @endif
+                        </div>
+                    </td>
+                    <td>
+                        <div class="team-row">
+                            <img class="team-logo" src="{{ $awayTeam['logo'] }}" alt="logo">
+                            <span>{{ $awayTeam['name'] }}</span>
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        <span class="status-badge {{ $isLive ? 'status-live' : '' }}">
+                            @if ($isLive && isset($match['fixture']['status']['elapsed']))
+                                {{ $match['fixture']['status']['elapsed'] }}'
+                            @else
+                                {{ $statusShort }}
+                            @endif
+                        </span>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
+    </div>
 @endsection

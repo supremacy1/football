@@ -1,12 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log; // Import Log facade
+use Illuminate\Support\Facades\Config;
 
 class LiveMatchController extends Controller
 {
@@ -25,7 +22,7 @@ class LiveMatchController extends Controller
         if (!$apiKey) {
             $error = 'API_SPORTS_KEY is not set in the .env file.';
             Log::error($error);
-            return view('live', compact('matches', 'error', 'rawData'));
+            return view('live', ['matches' => [], 'error' => $error]);
         }
 
         try {
@@ -36,7 +33,7 @@ class LiveMatchController extends Controller
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 30,
+                CURLOPT_TIMEOUT => 30, // Set a timeout
                 CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                 CURLOPT_CUSTOMREQUEST => 'GET',
@@ -55,12 +52,14 @@ class LiveMatchController extends Controller
             curl_close($curl);
 
             $data = json_decode($response, true);
-            $rawData = $data; // Populate rawData for the view
+            $rawData = $data; // Store raw data for debugging
 
+            // Check for HTTP errors first or API specific errors
             if ($httpCode !== 200 || (isset($data['errors']) && !empty($data['errors']))) {
                 $error = 'API Error: ' . ($data['message'] ?? json_encode($data['errors'] ?? "HTTP status $httpCode"));
             }
 
+            // Extract matches if no error
             if (!$error && isset($data['response']) && is_array($data['response'])) {
                 $matches = $data['response'];
             }
@@ -68,7 +67,7 @@ class LiveMatchController extends Controller
             $error = 'Exception during API call: ' . $e->getMessage();
         }
 
-        // Sort matches
+        // Sort matches: Live first, then Scheduled, then Finished (only if no error)
         usort($matches, function($a, $b) {
             $getRank = function($status) {
                 $status = strtolower($status);
@@ -85,7 +84,7 @@ class LiveMatchController extends Controller
             return ($a['fixture']['timestamp'] ?? 0) <=> ($b['fixture']['timestamp'] ?? 0);
         });
 
-        if ($error) Log::error('LiveMatchController API Error: ' . $error);
+        Log::error('LiveMatchController API Error: ' . $error);
         return view('live', compact('matches', 'error', 'rawData'));
     }
 }

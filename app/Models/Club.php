@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ClubMatch;
 
 class Club extends Model
 {
@@ -27,7 +28,8 @@ class Club extends Model
 
     public function posts()
     {
-        return $this->hasMany(Post::class);
+        // We must tell this relationship to ignore the global scope to show club posts here
+        return $this->hasMany(Post::class)->withoutGlobalScope('no_club');
     }
 
     public function players()
@@ -37,12 +39,12 @@ class Club extends Model
 
     public function homeMatches()
     {
-        return $this->hasMany('App\\Models\\Match', 'home_club_id');
+        return $this->hasMany(ClubMatch::class, 'home_club_id');
     }
 
     public function awayMatches()
     {
-        return $this->hasMany('App\\Models\\Match', 'away_club_id');
+        return $this->hasMany(ClubMatch::class, 'away_club_id');
     }
 
     public function followers()

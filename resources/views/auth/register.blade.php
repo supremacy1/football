@@ -73,6 +73,36 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="phone_number" class="form-label">Phone Number</label>
+                        <input type="text" class="form-control @error('phone_number') is-invalid @enderror" id="phone_number" name="phone_number" value="{{ old('phone_number') }}" placeholder="+234...">
+                        @error('phone_number')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="country" class="form-label">Country</label>
+                        <select class="form-select @error('country') is-invalid @enderror" id="country" name="country">
+                            <option value="">Select your country</option>
+                            @php
+                                $majorCountries = [
+                                    'Nigeria', 'Ghana', 'South Africa', 'Kenya', 'Egypt', 'Cameroon', 'Senegal',
+                                    'United Kingdom', 'United States', 'Brazil', 'Argentina', 'France', 
+                                    'Germany', 'Spain', 'Portugal', 'Italy', 'Netherlands'
+                                ];
+                            @endphp
+                            @foreach($majorCountries as $country)
+                                <option value="{{ $country }}" {{ old('country') == $country ? 'selected' : '' }}>
+                                    {{ $country }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('country')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
                         <label for="date_of_birth" class="form-label">Date of Birth</label>
                         <input type="date" class="form-control @error('date_of_birth') is-invalid @enderror" id="date_of_birth" name="date_of_birth" value="{{ old('date_of_birth') }}">
                         @error('date_of_birth')
@@ -138,6 +168,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var pwdConf = document.getElementById('password_confirmation');
     var submit = document.querySelector('button[type="submit"]');
     var emailInput = document.getElementById('email');
+    var phoneInput = document.getElementById('phone_number');
+    var countryInput = document.getElementById('country');
     var usernameInput = document.getElementById('username');
     var nameInput = document.getElementById('name');
     var checkTimeout;
@@ -269,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Add touched state on blur or input
-    const inputs = [nameInput, emailInput, usernameInput, pwd, pwdConf];
+    const inputs = [nameInput, emailInput, usernameInput, pwd, pwdConf, phoneInput, countryInput];
     inputs.forEach(input => input.addEventListener('blur', () => { touchedFields.add(input.id); validate(); }));
 
     // Event Listeners for real-time validation

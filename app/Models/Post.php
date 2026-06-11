@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
@@ -23,6 +24,17 @@ class Post extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted()
+    {
+        // Add a global scope to exclude club posts from general queries by default
+        static::addGlobalScope('no_club', function (Builder $builder) {
+            $builder->whereNull('club_id');
+        });
+    }
 
     public function user()
     {
@@ -111,5 +123,16 @@ class Post extends Model
     public function isDislikedBy(User $user)
     {
         return $this->likes()->where('user_id', $user->id)->where('is_like', false)->exists();
+    }
+
+    /**
+     * Scope a query to only include posts not assigned to a club (General Feed).
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeNoClub($query)
+    {
+        return $query->whereNull('club_id');
     }
 }

@@ -115,6 +115,65 @@ unset($__errorArgs, $__bag); ?>
                     </div>
 
                     <div class="mb-3">
+                        <label for="phone_number" class="form-label">Phone Number</label>
+                        <input type="text" class="form-control <?php $__errorArgs = ['phone_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="phone_number" name="phone_number" value="<?php echo e(old('phone_number')); ?>" placeholder="+234...">
+                        <?php $__errorArgs = ['phone_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="country" class="form-label">Country</label>
+                        <select class="form-select <?php $__errorArgs = ['country'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="country" name="country">
+                            <option value="">Select your country</option>
+                            <?php
+                                $majorCountries = [
+                                    'Nigeria', 'Ghana', 'South Africa', 'Kenya', 'Egypt', 'Cameroon', 'Senegal',
+                                    'United Kingdom', 'United States', 'Brazil', 'Argentina', 'France', 
+                                    'Germany', 'Spain', 'Portugal', 'Italy', 'Netherlands'
+                                ];
+                            ?>
+                            <?php $__currentLoopData = $majorCountries; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $country): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($country); ?>" <?php echo e(old('country') == $country ? 'selected' : ''); ?>>
+                                    <?php echo e($country); ?>
+
+                                </option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                        <?php $__errorArgs = ['country'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="date_of_birth" class="form-label">Date of Birth</label>
                         <input type="date" class="form-control <?php $__errorArgs = ['date_of_birth'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
@@ -222,6 +281,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var pwdConf = document.getElementById('password_confirmation');
     var submit = document.querySelector('button[type="submit"]');
     var emailInput = document.getElementById('email');
+    var phoneInput = document.getElementById('phone_number');
+    var countryInput = document.getElementById('country');
     var usernameInput = document.getElementById('username');
     var nameInput = document.getElementById('name');
     var checkTimeout;
@@ -353,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Add touched state on blur or input
-    const inputs = [nameInput, emailInput, usernameInput, pwd, pwdConf];
+    const inputs = [nameInput, emailInput, usernameInput, pwd, pwdConf, phoneInput, countryInput];
     inputs.forEach(input => input.addEventListener('blur', () => { touchedFields.add(input.id); validate(); }));
 
     // Event Listeners for real-time validation
