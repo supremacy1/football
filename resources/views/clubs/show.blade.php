@@ -15,7 +15,7 @@
             <div class="card-body position-relative">
                 <div class="d-flex justify-content-between align-items-start" style="margin-top: -80px;">
                     @if ($club->logo)
-                        <img src="{{ asset('storage/' . $club->logo) }}" alt="{{ $club->name }}" class="large-avatar border-4 border-white">
+                        <img src="{{ str_starts_with($club->logo, 'http') ? $club->logo : asset('storage/' . $club->logo) }}" alt="{{ $club->name }}" class="large-avatar border-4 border-white">
                     @else
                         <div class="large-avatar border-4 border-white d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 3rem; color: white;">
                             <i class="fas fa-shield-alt"></i>

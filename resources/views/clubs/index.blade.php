@@ -19,7 +19,7 @@
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="card h-100">
                         @if ($club->logo)
-                            <img src="{{ asset('storage/' . $club->logo) }}" alt="{{ $club->name }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                            <img src="{{ str_starts_with($club->logo, 'http') ? $club->logo : asset('storage/' . $club->logo) }}" alt="{{ $club->name }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                         @else
                             <div class="card-img-top" style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white;">
                                 <i class="fas fa-shield-alt" style="font-size: 3rem;"></i>

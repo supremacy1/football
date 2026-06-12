@@ -14,7 +14,7 @@ class ClubMatch extends Model
      *
      * @var string
      */
-    protected $table = 'matches';
+    protected $table = 'club_matches';
 
     protected $fillable = [
         'home_club_id',

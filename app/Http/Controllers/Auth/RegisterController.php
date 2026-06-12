@@ -17,9 +17,7 @@ class RegisterController
 {
     public function showRegisterForm()
     {
-        $clubs = Club::orderBy('name')->get();
-
-        return view('auth.register', compact('clubs'));
+        return view('auth.register');
     }
 
     public function register(Request $request)
@@ -29,10 +27,10 @@ class RegisterController
             'username' => 'required|string|unique:users|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'phone_number' => 'nullable|string|max:20', // Added phone number validation
-            'country' => 'nullable|string|max:100',     // Added country validation
-            'favorite_club_id' => 'nullable|exists:clubs,id',
-            'date_of_birth' => 'nullable|date',
+            'phone_number' => 'required|string|max:20',
+            'country' => 'required|string|max:100',
+            'favorite_club_id' => 'required|integer',
+            'date_of_birth' => 'required|date',
         ]);
 
         return DB::transaction(function () use ($validated) {
@@ -40,11 +38,11 @@ class RegisterController
                 'name' => $validated['name'],
                 'username' => $validated['username'],
                 'email' => $validated['email'],
-                'phone_number' => $validated['phone_number'] ?? null, // Save phone number
-                'country' => $validated['country'] ?? null,           // Save country
+                'phone_number' => $validated['phone_number'],
+                'country' => $validated['country'],
                 'password' => Hash::make($validated['password']),
-                'date_of_birth' => $validated['date_of_birth'] ?? null,
-                'favorite_club_id' => $validated['favorite_club_id'] ?? null,
+                'date_of_birth' => $validated['date_of_birth'],
+                'favorite_club_id' => $validated['favorite_club_id'],
             ]);
 
             // Auto-enroll into selected club if provided

@@ -17,6 +17,13 @@ class BetController extends Controller
 {
     public function index()
     {
+        // Automatically sync results and settle bets whenever the dashboard is viewed.
+        // Throttled to every 10 minutes to protect API rate limits.
+        cache()->remember('auto_settlement_check', 10, function() {
+            $this->autoSettleFinishedBets();
+            return true;
+        });
+
         $fixtures = cache()->remember('betting_fixtures', 15, function () {
             return $this->fetchUpcomingFixtures();
         });
@@ -41,11 +48,16 @@ class BetController extends Controller
         if (!$apiKey) return [];
 
         $fixtures = [];
-        $dates = [now()->format('Y-m-d'), now()->addDay()->format('Y-m-d')];
+        
+        // Fetch fixtures for today and tomorrow to cover the 24-hour window
+        $dates = [Carbon::now()->format('Y-m-d'), Carbon::now()->addDay()->format('Y-m-d')];
 
         foreach ($dates as $date) {
-            $response = Http::withHeaders(['x-apisports-key' => $apiKey])
-                ->get("https://v3.football.api-sports.io/fixtures", ['date' => $date]);
+            $response = Http::timeout(15)->withHeaders(['x-apisports-key' => $apiKey])
+                ->get("https://v3.football.api-sports.io/fixtures", [
+                    'date' => $date,
+                    'status' => 'NS' // Only fetch Not Started matches
+                ]);
 
             if ($response->successful()) {
                 $fixtures = array_merge($fixtures, $response->json()['response'] ?? []);
@@ -66,30 +78,52 @@ class BetController extends Controller
     {
         $syncedMatches = collect();
 
-        foreach ($fixtures as $item) {
-            // We sync the match data into our local 'matches' table so we can track bets.
-            // This ensures that 'match_id' exists for the Bet model relationships.
-            $homeClub = Club::firstOrCreate(
-                ['name' => $item['teams']['home']['name']],
-                ['slug' => Str::slug($item['teams']['home']['name'])]
-            );
-            $awayClub = Club::firstOrCreate(
-                ['name' => $item['teams']['away']['name']],
-                ['slug' => Str::slug($item['teams']['away']['name'])]
-            );
+        // Optimization: Only perform DB writes if fixtures were recently updated or every 30 mins
+        $syncKey = 'matches_synced_to_db_' . md5(json_encode(collect($fixtures)->pluck('fixture.id')));
+        $shouldSync = !cache()->has($syncKey);
 
-            $match = ClubMatch::updateOrCreate(
-                [
-                    'home_club_id' => $homeClub->id,
-                    'away_club_id' => $awayClub->id,
-                    'match_date'   => Carbon::parse($item['fixture']['date']),
-                ],
-                [
-                    'venue'  => $item['fixture']['venue']['name'] ?? 'TBD',
-                    'status' => 'scheduled',
-                    'league' => $item['league']['name'] ?? null,
-                ]
-            );
+        $homeClubIds = [];
+        $awayClubIds = [];
+
+        foreach ($fixtures as $item) {
+            if ($shouldSync) {
+                // We use updateOrCreate to ensure elite clubs have their latest logos
+                $homeClub = Club::updateOrCreate(
+                    ['name' => $item['teams']['home']['name']],
+                    [
+                        'slug' => Str::slug($item['teams']['home']['name']),
+                        'logo' => $item['teams']['home']['logo'] ?? null
+                    ]
+                );
+                $awayClub = Club::updateOrCreate(
+                    ['name' => $item['teams']['away']['name']],
+                    [
+                        'slug' => Str::slug($item['teams']['away']['name']),
+                        'logo' => $item['teams']['away']['logo'] ?? null
+                    ]
+                );
+
+                $match = ClubMatch::updateOrCreate(
+                    [
+                        'home_club_id' => $homeClub->id,
+                        'away_club_id' => $awayClub->id,
+                        'match_date'   => Carbon::parse($item['fixture']['date']),
+                    ],
+                    [
+                        'venue'  => $item['fixture']['venue']['name'] ?? 'TBD',
+                        'status' => 'scheduled',
+                        'league' => $item['league']['name'] ?? null,
+                    ]
+                );
+            } else {
+                // Lightweight retrieval if already synced
+                $match = ClubMatch::whereHas('homeClub', fn($q) => $q->where('name', $item['teams']['home']['name']))
+                    ->whereHas('awayClub', fn($q) => $q->where('name', $item['teams']['away']['name']))
+                    ->where('match_date', Carbon::parse($item['fixture']['date']))
+                    ->first();
+            }
+
+            if (!$match) continue;
 
             // Eager load necessary relations and open bets
             $match->load(['homeClub', 'awayClub', 'bets' => function ($query) {
@@ -97,6 +131,10 @@ class BetController extends Controller
             }]);
 
             $syncedMatches->push($match);
+        }
+
+        if ($shouldSync && $syncedMatches->isNotEmpty()) {
+            cache()->put($syncKey, true, now()->addMinutes(30));
         }
 
         return $syncedMatches;
@@ -188,11 +226,37 @@ class BetController extends Controller
         return back();
     }
 
+    /**
+     * Internal method to settle all locked bets for finished matches automatically.
+     */
+    private function autoSettleFinishedBets()
+    {
+        $this->syncFinishedMatchResults();
+
+        $lockedBets = Bet::where('status', 'locked')
+            ->whereHas('match', function ($query) {
+                $query->where('status', 'finished');
+            })
+            ->get();
+
+        foreach ($lockedBets as $bet) {
+            $bet->refresh();
+            if ($bet->status === 'locked') {
+                $this->performSettlement($bet);
+            }
+        }
+    }
+
     public function claim(Bet $bet)
     {
         $match = $bet->match;
         
-        // Ensure match is actually over before allowing claim
+        // Attempt to sync result if match time has passed but status isn't updated
+        if ($match->status !== 'finished' && $match->match_date < now()->subHours(2)) {
+            $this->updateSingleMatchResult($match);
+            $match->refresh();
+        }
+
         if (in_array(strtolower($match->status), ['scheduled', 'notstarted', 'inprogress', 'in_progress'])) {
             return back()->with('error', 'Match is still ongoing. Please wait until completion.');
         }
@@ -200,31 +264,160 @@ class BetController extends Controller
             return back()->with('error', 'Match status is currently: ' . $match->status);
         }
 
-        $winner = null;
-        if ($match->home_score > $match->away_score) $winner = 'home';
-        elseif ($match->away_score > $match->home_score) $winner = 'away';
-        else $winner = 'draw';
+        $result = $this->performSettlement($bet);
 
-        if ($bet->selection === $winner) {
-            return DB::transaction(function () use ($bet) {
-                $totalPool = $bet->amount * 2;
-                $commission = $totalPool * 0.05; // 5% commission
-                $payout = $totalPool - $commission; 
-
-                $wallet = Wallet::where('user_id', $bet->user_id)->first();
-                $wallet->increment('balance', $payout);
-                
-                $bet->update(['status' => 'won', 'payout' => $payout]);
-                
-                // Update partner bet
-                Bet::where('match_id', $bet->match_id)
-                    ->where('user_id', $bet->partner_id)
-                    ->update(['status' => 'lost']);
-
-                return back()->with('success', 'Congratulations! You won ₦' . number_format($payout, 2));
-            });
+        if (isset($result['error'])) {
+            return back()->with('error', $result['error']);
         }
 
-        return back()->with('info', 'Match finished. You lost this bet. Better luck next time!');
+        return back()->with($result['type'], $result['message']);
+    }
+
+    private function performSettlement(Bet $bet)
+    {
+        $match = $bet->match;
+        $winner = $this->calculateWinner($match);
+
+        return DB::transaction(function () use ($bet, $winner) {
+            if ($bet->status !== 'locked') {
+                return ['type' => 'info', 'message' => 'This bet has already been settled.'];
+            }
+
+            $partnerBet = Bet::where('match_id', $bet->match_id)
+                ->where('user_id', $bet->partner_id)
+                ->where('partner_id', $bet->user_id)
+                ->where('status', 'locked')
+                ->first();
+
+            if ($winner === 'draw') {
+                $refundAmount = $bet->amount * 0.98; // Deduct 2% from stake
+
+                // Settle current user
+                $wallet = Wallet::where('user_id', $bet->user_id)->first();
+                if ($wallet) $wallet->increment('balance', $refundAmount);
+                $bet->update(['status' => 'draw', 'payout' => $refundAmount]);
+
+                // Settle partner
+                if ($partnerBet) {
+                    $pWallet = Wallet::where('user_id', $partnerBet->user_id)->first();
+                    if ($pWallet) $pWallet->increment('balance', $refundAmount);
+                    $partnerBet->update(['status' => 'draw', 'payout' => $refundAmount]);
+                }
+
+                return ['type' => 'info', 'message' => 'Match ended in a draw. Stake returned minus 2% commission.'];
+            }
+
+            // Winner logic
+            $claimingUserWon = ($bet->selection === $winner);
+            $winningBet = $claimingUserWon ? $bet : $partnerBet;
+            $losingBet = $claimingUserWon ? $partnerBet : $bet;
+
+            if ($winningBet) {
+                $totalPool = $winningBet->amount * 2;
+                $payout = $totalPool - ($winningBet->amount * 0.05); // Deduct 5% from stake
+
+                $wWallet = Wallet::where('user_id', $winningBet->user_id)->first();
+                if ($wWallet) $wWallet->increment('balance', $payout);
+                $winningBet->update(['status' => 'won', 'payout' => $payout]);
+            }
+
+            if ($losingBet) {
+                $losingBet->update(['status' => 'lost']);
+            }
+
+            if ($claimingUserWon) {
+                return ['type' => 'success', 'message' => 'Congratulations! You won ₦' . number_format($winningBet->payout ?? 0, 2)];
+            }
+
+            return ['type' => 'info', 'message' => 'Match finished. You lost this bet. Winner has been credited.'];
+        });
+    }
+
+    private function calculateWinner($match)
+    {
+        if ($match->home_score > $match->away_score) return 'home';
+        if ($match->away_score > $match->home_score) return 'away';
+        return 'draw';
+    }
+
+    private function syncFinishedMatchResults()
+    {
+        $apiKey = env('API_SPORTS_KEY');
+        if (!$apiKey) return;
+
+        // Find matches that are past their start time but not yet marked finished
+        $matches = ClubMatch::where('status', 'scheduled')
+            ->where('match_date', '<', now()->subHours(2))
+            ->with(['homeClub', 'awayClub'])
+            ->get();
+
+        if ($matches->isEmpty()) return;
+
+        // Group by date to minimize API calls (Batching)
+        $dates = $matches->pluck('match_date')->map(fn($d) => $d->format('Y-m-d'))->unique();
+
+        foreach ($dates as $date) {
+            $response = Http::timeout(10)->withHeaders(['x-apisports-key' => $apiKey])
+                ->get("https://v3.football.api-sports.io/fixtures", ['date' => $date]);
+
+            if ($response->successful()) {
+                $fixtures = $response->json()['response'] ?? [];
+                
+                // Create a lookup map for faster processing
+                $apiMap = [];
+                foreach ($fixtures as $f) {
+                    $key = Str::slug($f['teams']['home']['name'] . '-' . $f['teams']['away']['name']);
+                    $apiMap[$key] = $f;
+                }
+
+                foreach ($matches as $match) {
+                    if ($match->match_date->format('Y-m-d') !== $date) continue;
+
+                    $lookupKey = Str::slug($match->homeClub->name . '-' . $match->awayClub->name);
+                    
+                    if (isset($apiMap[$lookupKey])) {
+                        $apiMatch = $apiMap[$lookupKey];
+                        $status = $apiMatch['fixture']['status']['short'] ?? '';
+                        
+                        if (in_array($status, ['FT', 'AET', 'PEN'])) {
+                            $match->update([
+                                'home_score' => $apiMatch['goals']['home'],
+                                'away_score' => $apiMatch['goals']['away'],
+                                'status' => 'finished'
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private function updateSingleMatchResult(ClubMatch $match)
+    {
+        $apiKey = env('API_SPORTS_KEY');
+        $date = $match->match_date->format('Y-m-d');
+        
+        $response = Http::withHeaders(['x-apisports-key' => $apiKey])
+            ->get("https://v3.football.api-sports.io/fixtures", ['date' => $date]);
+
+        if ($response->successful()) {
+            $fixtures = $response->json()['response'] ?? [];
+            foreach ($fixtures as $item) {
+                // Identify the specific match by comparing team names
+                if ($item['teams']['home']['name'] === $match->homeClub->name && 
+                    $item['teams']['away']['name'] === $match->awayClub->name) {
+                    
+                    $status = $item['fixture']['status']['short'];
+                    if (in_array($status, ['FT', 'AET', 'PEN'])) {
+                        $match->update([
+                            'home_score' => $item['goals']['home'],
+                            'away_score' => $item['goals']['away'],
+                            'status' => 'finished'
+                        ]);
+                    }
+                    break;
+                }
+            }
+        }
     }
 }

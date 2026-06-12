@@ -21,7 +21,7 @@
                     <div class="card-body">
                         <div class="row align-items-center text-center">
                             <div class="col-4">
-                                <img src="<?php echo e(($match->homeClub && $match->homeClub->logo) ? asset('storage/'.$match->homeClub->logo) : 'https://via.placeholder.com/40'); ?>" class="avatar mb-2" style="width: 50px; height: 50px; object-fit: contain;">
+                                <img src="<?php echo e(($match->homeClub && $match->homeClub->logo) ? (str_starts_with($match->homeClub->logo, 'http') ? $match->homeClub->logo : asset('storage/'.$match->homeClub->logo)) : 'https://via.placeholder.com/40'); ?>" class="avatar mb-2" style="width: 50px; height: 50px; object-fit: contain;">
                                 <h6 class="mb-0 fw-bold"><?php echo e($match->homeClub->name); ?></h6>
                             </div>
                             <div class="col-4">
@@ -55,7 +55,7 @@
 
                             </div>
                             <div class="col-4">
-                                <img src="<?php echo e(($match->awayClub && $match->awayClub->logo) ? asset('storage/'.$match->awayClub->logo) : 'https://via.placeholder.com/40'); ?>" class="avatar mb-2" style="width: 50px; height: 50px; object-fit: contain;">
+                                <img src="<?php echo e(($match->awayClub && $match->awayClub->logo) ? (str_starts_with($match->awayClub->logo, 'http') ? $match->awayClub->logo : asset('storage/'.$match->awayClub->logo)) : 'https://via.placeholder.com/40'); ?>" class="avatar mb-2" style="width: 50px; height: 50px; object-fit: contain;">
                                 <h6 class="mb-0 fw-bold"><?php echo e($match->awayClub->name); ?></h6>
                             </div>
                         </div>
@@ -100,7 +100,9 @@
         <div class="col-lg-4">
             <div class="card shadow-sm border-0 sticky-top" style="top: 90px;">
                 <div class="card-header bg-primary text-white py-3">
-                    <h5 class="mb-0 fw-bold"><i class="fas fa-history"></i> My Bets Dashboard</h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-history"></i> My Bets Dashboard</h5>
+                    </div>
                 </div>
                 <div class="list-group list-group-flush" style="max-height: 70vh; overflow-y: auto;">
                     <?php $__empty_1 = true; $__currentLoopData = $myBets; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bet): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>

@@ -37,7 +37,7 @@ class ProfileController
             'date_of_birth' => 'nullable|date',
             'profile_picture' => 'nullable|image|max:2048',
             'cover_photo' => 'nullable|image|max:2048',
-            'favorite_club_id' => 'nullable|exists:clubs,id',
+            'favorite_club_id' => 'nullable|integer', // integer instead of exists allows more flexibility if using '0' for others
         ]);
 
         if ($request->hasFile('profile_picture')) {

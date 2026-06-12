@@ -16,8 +16,10 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('banner')->nullable();
             $table->string('country')->nullable();
-            $table->string('founded_year')->nullable();
-            $table->unsignedInteger('members_count')->default(0);
+            $table->integer('founded_year')->nullable();
+            $table->integer('members_count')->default(0);
+            $table->integer('posts_count')->default(0);
+            $table->integer('players_count')->default(0);
             $table->timestamps();
         });
     }

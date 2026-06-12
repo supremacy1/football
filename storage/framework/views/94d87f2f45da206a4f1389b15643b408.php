@@ -1,8 +1,8 @@
-@extends('layouts.app')
 
-@section('title', 'Register')
 
-@section('content')
+<?php $__env->startSection('title', 'Register'); ?>
+
+<?php $__env->startSection('content'); ?>
 <style>
     body {
         background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1529900748604-07564a03e7a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
@@ -46,122 +46,235 @@
                 </div>
 
                 <form action="/register" method="POST">
-                    @csrf
+                    <?php echo csrf_field(); ?>
 
                     <div class="mb-3">
                         <label for="name" class="form-label">Full Name</label>
-                        <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <input type="text" class="form-control <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="name" name="name" value="<?php echo e(old('name')); ?>" required>
+                        <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                     </div>
 
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control @error('username') is-invalid @enderror" id="username" name="username" value="{{ old('username') }}" required>
-                        @error('username')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <input type="text" class="form-control <?php $__errorArgs = ['username'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="username" name="username" value="<?php echo e(old('username')); ?>" required>
+                        <?php $__errorArgs = ['username'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                     </div>
 
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email') }}" required>
-                        @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <input type="email" class="form-control <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="email" name="email" value="<?php echo e(old('email')); ?>" required>
+                        <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                     </div>
 
                     <div class="mb-3">
                         <label for="phone_number" class="form-label">Phone Number</label>
-                        <input type="text" class="form-control @error('phone_number') is-invalid @enderror" id="phone_number" name="phone_number" value="{{ old('phone_number') }}" placeholder="+234..." required>
-                        @error('phone_number')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <input type="text" class="form-control <?php $__errorArgs = ['phone_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="phone_number" name="phone_number" value="<?php echo e(old('phone_number')); ?>" placeholder="+234..." required>
+                        <?php $__errorArgs = ['phone_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                     </div>
 
                     <div class="mb-3">
                         <label for="country" class="form-label">Country</label>
-                        <select class="form-select @error('country') is-invalid @enderror" id="country" name="country" required>
+                        <select class="form-select <?php $__errorArgs = ['country'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="country" name="country" required>
                             <option value="">Select your country</option>
-                            @php
+                            <?php
                                 $majorCountries = [
                                     'Nigeria', 'Ghana', 'South Africa', 'Kenya', 'Egypt', 'Cameroon', 'Senegal',
                                     'United Kingdom', 'United States', 'Brazil', 'Argentina', 'France', 
                                     'Germany', 'Spain', 'Portugal', 'Italy', 'Netherlands'
                                 ];
-                            @endphp
-                            @foreach($majorCountries as $country)
-                                <option value="{{ $country }}" {{ old('country') == $country ? 'selected' : '' }}>
-                                    {{ $country }}
+                            ?>
+                            <?php $__currentLoopData = $majorCountries; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $country): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($country); ?>" <?php echo e(old('country') == $country ? 'selected' : ''); ?>>
+                                    <?php echo e($country); ?>
+
                                 </option>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
-                        @error('country')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <?php $__errorArgs = ['country'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                     </div>
 
                     <div class="mb-3">
                         <label for="date_of_birth" class="form-label">Date of Birth</label>
-                        <input type="date" class="form-control @error('date_of_birth') is-invalid @enderror" id="date_of_birth" name="date_of_birth" value="{{ old('date_of_birth') }}" required>
-                        @error('date_of_birth')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <input type="date" class="form-control <?php $__errorArgs = ['date_of_birth'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="date_of_birth" name="date_of_birth" value="<?php echo e(old('date_of_birth')); ?>" required>
+                        <?php $__errorArgs = ['date_of_birth'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                     </div>
 
                     <div class="mb-3">
                         <label for="favorite_club_id" class="form-label">Favorite Club</label>
-                        <select class="form-select @error('favorite_club_id') is-invalid @enderror" id="favorite_club_id" name="favorite_club_id" required>
+                        <select class="form-select <?php $__errorArgs = ['favorite_club_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="favorite_club_id" name="favorite_club_id" required>
                             <option value="">-- Select Your Squad --</option>
-                            <option value="17" {{ old('favorite_club_id') == 17 ? 'selected' : '' }}>AC Milan</option>
-                            <option value="4" {{ old('favorite_club_id') == 4 ? 'selected' : '' }}>Arsenal FC</option>
-                            <option value="30" {{ old('favorite_club_id') == 30 ? 'selected' : '' }}>AS Monaco</option>
-                            <option value="19" {{ old('favorite_club_id') == 19 ? 'selected' : '' }}>AS Roma</option>
-                            <option value="7" {{ old('favorite_club_id') == 7 ? 'selected' : '' }}>Aston Villa</option>
-                            <option value="21" {{ old('favorite_club_id') == 21 ? 'selected' : '' }}>Atalanta BC</option>
-                            <option value="13" {{ old('favorite_club_id') == 13 ? 'selected' : '' }}>Athletic Club</option>
-                            <option value="11" {{ old('favorite_club_id') == 11 ? 'selected' : '' }}>Atletico Madrid</option>
-                            <option value="24" {{ old('favorite_club_id') == 24 ? 'selected' : '' }}>Bayer Leverkusen</option>
-                            <option value="22" {{ old('favorite_club_id') == 22 ? 'selected' : '' }}>Bayern Munich</option>
-                            <option value="23" {{ old('favorite_club_id') == 23 ? 'selected' : '' }}>Borussia Dortmund</option>
-                            <option value="5" {{ old('favorite_club_id') == 5 ? 'selected' : '' }}>Chelsea FC</option>
-                            <option value="9" {{ old('favorite_club_id') == 9 ? 'selected' : '' }}>FC Barcelona</option>
-                            <option value="14" {{ old('favorite_club_id') == 14 ? 'selected' : '' }}>Girona FC</option>
-                            <option value="16" {{ old('favorite_club_id') == 16 ? 'selected' : '' }}>Inter Milan</option>
-                            <option value="15" {{ old('favorite_club_id') == 15 ? 'selected' : '' }}>Juventus</option>
-                            <option value="3" {{ old('favorite_club_id') == 3 ? 'selected' : '' }}>Liverpool FC</option>
-                            <option value="2" {{ old('favorite_club_id') == 2 ? 'selected' : '' }}>Manchester City</option>
-                            <option value="1" {{ old('favorite_club_id') == 1 ? 'selected' : '' }}>Manchester United</option>
-                            <option value="8" {{ old('favorite_club_id') == 8 ? 'selected' : '' }}>Newcastle United</option>
-                            <option value="29" {{ old('favorite_club_id') == 29 ? 'selected' : '' }}>Olympique Lyon</option>
-                            <option value="28" {{ old('favorite_club_id') == 28 ? 'selected' : '' }}>Olympique Marseille</option>
-                            <option value="27" {{ old('favorite_club_id') == 27 ? 'selected' : '' }}>Paris Saint-Germain</option>
-                            <option value="25" {{ old('favorite_club_id') == 25 ? 'selected' : '' }}>RB Leipzig</option>
-                            <option value="10" {{ old('favorite_club_id') == 10 ? 'selected' : '' }}>Real Madrid</option>
-                            <option value="12" {{ old('favorite_club_id') == 12 ? 'selected' : '' }}>Real Sociedad</option>
-                            <option value="20" {{ old('favorite_club_id') == 20 ? 'selected' : '' }}>SS Lazio</option>
-                            <option value="18" {{ old('favorite_club_id') == 18 ? 'selected' : '' }}>SSC Napoli</option>
-                            <option value="6" {{ old('favorite_club_id') == 6 ? 'selected' : '' }}>Tottenham Hotspur</option>
-                            <option value="26" {{ old('favorite_club_id') == 26 ? 'selected' : '' }}>VfB Stuttgart</option>
+                            <option value="17" <?php echo e(old('favorite_club_id') == 17 ? 'selected' : ''); ?>>AC Milan</option>
+                            <option value="4" <?php echo e(old('favorite_club_id') == 4 ? 'selected' : ''); ?>>Arsenal FC</option>
+                            <option value="30" <?php echo e(old('favorite_club_id') == 30 ? 'selected' : ''); ?>>AS Monaco</option>
+                            <option value="19" <?php echo e(old('favorite_club_id') == 19 ? 'selected' : ''); ?>>AS Roma</option>
+                            <option value="7" <?php echo e(old('favorite_club_id') == 7 ? 'selected' : ''); ?>>Aston Villa</option>
+                            <option value="21" <?php echo e(old('favorite_club_id') == 21 ? 'selected' : ''); ?>>Atalanta BC</option>
+                            <option value="13" <?php echo e(old('favorite_club_id') == 13 ? 'selected' : ''); ?>>Athletic Club</option>
+                            <option value="11" <?php echo e(old('favorite_club_id') == 11 ? 'selected' : ''); ?>>Atletico Madrid</option>
+                            <option value="24" <?php echo e(old('favorite_club_id') == 24 ? 'selected' : ''); ?>>Bayer Leverkusen</option>
+                            <option value="22" <?php echo e(old('favorite_club_id') == 22 ? 'selected' : ''); ?>>Bayern Munich</option>
+                            <option value="23" <?php echo e(old('favorite_club_id') == 23 ? 'selected' : ''); ?>>Borussia Dortmund</option>
+                            <option value="5" <?php echo e(old('favorite_club_id') == 5 ? 'selected' : ''); ?>>Chelsea FC</option>
+                            <option value="9" <?php echo e(old('favorite_club_id') == 9 ? 'selected' : ''); ?>>FC Barcelona</option>
+                            <option value="14" <?php echo e(old('favorite_club_id') == 14 ? 'selected' : ''); ?>>Girona FC</option>
+                            <option value="16" <?php echo e(old('favorite_club_id') == 16 ? 'selected' : ''); ?>>Inter Milan</option>
+                            <option value="15" <?php echo e(old('favorite_club_id') == 15 ? 'selected' : ''); ?>>Juventus</option>
+                            <option value="3" <?php echo e(old('favorite_club_id') == 3 ? 'selected' : ''); ?>>Liverpool FC</option>
+                            <option value="2" <?php echo e(old('favorite_club_id') == 2 ? 'selected' : ''); ?>>Manchester City</option>
+                            <option value="1" <?php echo e(old('favorite_club_id') == 1 ? 'selected' : ''); ?>>Manchester United</option>
+                            <option value="8" <?php echo e(old('favorite_club_id') == 8 ? 'selected' : ''); ?>>Newcastle United</option>
+                            <option value="29" <?php echo e(old('favorite_club_id') == 29 ? 'selected' : ''); ?>>Olympique Lyon</option>
+                            <option value="28" <?php echo e(old('favorite_club_id') == 28 ? 'selected' : ''); ?>>Olympique Marseille</option>
+                            <option value="27" <?php echo e(old('favorite_club_id') == 27 ? 'selected' : ''); ?>>Paris Saint-Germain</option>
+                            <option value="25" <?php echo e(old('favorite_club_id') == 25 ? 'selected' : ''); ?>>RB Leipzig</option>
+                            <option value="10" <?php echo e(old('favorite_club_id') == 10 ? 'selected' : ''); ?>>Real Madrid</option>
+                            <option value="12" <?php echo e(old('favorite_club_id') == 12 ? 'selected' : ''); ?>>Real Sociedad</option>
+                            <option value="20" <?php echo e(old('favorite_club_id') == 20 ? 'selected' : ''); ?>>SS Lazio</option>
+                            <option value="18" <?php echo e(old('favorite_club_id') == 18 ? 'selected' : ''); ?>>SSC Napoli</option>
+                            <option value="6" <?php echo e(old('favorite_club_id') == 6 ? 'selected' : ''); ?>>Tottenham Hotspur</option>
+                            <option value="26" <?php echo e(old('favorite_club_id') == 26 ? 'selected' : ''); ?>>VfB Stuttgart</option>
                             <option value="0">Others</option>
                         </select>
-                        @error('favorite_club_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <?php $__errorArgs = ['favorite_club_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                     </div>
 
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
                         <div class="input-group has-validation">
                             <span class="input-group-text"><i class="fas fa-futbol text-muted"></i></span>
-                            <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" required>
+                            <input type="password" class="form-control <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="password" name="password" required>
                             <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <div class="invalid-feedback"><?php echo e($message); ?></div>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </div>
                         <small id="password-hint" class="text-muted d-block mt-1">Minimum 8 characters required.</small>
                     </div>
@@ -181,7 +294,7 @@
                 </form>
 
                 <p class="text-center mb-0">
-                    Already in the squad? <a href="{{ route('login') }}" class="text-success fw-bold text-decoration-none">Login here</a>
+                    Already in the squad? <a href="<?php echo e(route('login')); ?>" class="text-success fw-bold text-decoration-none">Login here</a>
                 </p>
             </div>
         </div>
@@ -238,11 +351,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         try {
-            let response = await fetch('{{ route('check.availability') }}', {
+            let response = await fetch('<?php echo e(route('check.availability')); ?>', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
                 },
                 body: JSON.stringify({ type: type, value: value })
             });
@@ -443,4 +556,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\banta\resources\views/auth/register.blade.php ENDPATH**/ ?>
