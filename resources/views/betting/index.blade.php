@@ -8,7 +8,15 @@
         <!-- Upcoming Matches -->
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">Fixtures (Next 24 Hours)</h2>
+                <h2 class="mb-0">Fixtures (Next 24 Hours)
+                    @if($availableBetsCount > 0 && $firstPendingMatchId)
+                        <a href="#match-{{ $firstPendingMatchId }}" class="text-decoration-none">
+                            <span class="badge bg-warning text-dark ms-2" style="font-size: 0.4em; vertical-align: middle; cursor: pointer;">
+                                <i class="fas fa-bell animate-pulse"></i> {{ $availableBetsCount }} Waiting
+                            </span>
+                        </a>
+                    @endif
+                </h2>
                 <div class="badge bg-dark px-3 py-2">Wallet Balance: ₦{{ number_format(optional(auth()->user()->wallet)->balance ?? 0, 2) }}</div>
             </div>
 
@@ -17,7 +25,7 @@
             @endif
 
             @foreach($matches as $match)
-                <div class="card mb-3 shadow-sm border-0">
+                <div class="card mb-3 shadow-sm border-0" id="match-{{ $match->id }}">
                     <div class="card-body">
                         <div class="row align-items-center text-center">
                             <div class="col-4">
@@ -152,6 +160,10 @@
                             @elseif($bet->status === 'lost')
                                 <div class="alert alert-light mt-2 py-1 small mb-0 border-0 text-muted">
                                     Better luck next time.
+                                </div>
+                            @elseif($bet->status === 'cancelled')
+                                <div class="alert alert-warning mt-2 py-1 small mb-0 border-0">
+                                    Unmatched. Stake refunded.
                                 </div>
                             @endif
                         </div>

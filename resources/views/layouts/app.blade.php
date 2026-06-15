@@ -163,7 +163,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ route('welcome') }}">
-                <i class="fas fa-football-ball"></i> Football Social
+                <i class="fas fas fa-futbol"></i> Football Social
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>

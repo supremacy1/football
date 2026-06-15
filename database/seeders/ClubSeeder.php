@@ -4,14 +4,21 @@ namespace Database\Seeders;
 
 use App\Models\Club;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class ClubSeeder extends Seeder
 {
     public function run(): void
     {
+        // Truncate to ensure IDs align with hardcoded registration form
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Club::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         $clubs = [
             // Premier League (England)
             [
+                'id' => 1,
                 'name' => 'Manchester United',
                 'slug' => 'manchester-united',
                 'description' => 'The Red Devils of the Premier League.',
@@ -20,6 +27,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/33.png'
             ],
             [
+                'id' => 2,
                 'name' => 'Manchester City',
                 'slug' => 'manchester-city',
                 'description' => 'The Citizens.',
@@ -28,6 +36,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/50.png'
             ],
             [
+                'id' => 3,
                 'name' => 'Liverpool FC',
                 'slug' => 'liverpool-fc',
                 'description' => 'You Will Never Walk Alone. Merseyside legends.',
@@ -36,6 +45,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/40.png'
             ],
             [
+                'id' => 4,
                 'name' => 'Arsenal FC',
                 'slug' => 'arsenal-fc',
                 'description' => 'The Gunners.',
@@ -44,6 +54,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/42.png'
             ],
             [
+                'id' => 5,
                 'name' => 'Chelsea FC',
                 'slug' => 'chelsea-fc',
                 'description' => 'The Blues of Stamford Bridge.',
@@ -52,6 +63,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/49.png'
             ],
             [
+                'id' => 6,
                 'name' => 'Tottenham Hotspur',
                 'slug' => 'tottenham-hotspur',
                 'description' => 'The Spurs.',
@@ -60,6 +72,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/47.png'
             ],
             [
+                'id' => 7,
                 'name' => 'Aston Villa',
                 'slug' => 'aston-villa',
                 'description' => 'The Villans.',
@@ -68,6 +81,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/66.png'
             ],
             [
+                'id' => 8,
                 'name' => 'Newcastle United',
                 'slug' => 'newcastle-united',
                 'description' => 'The Magpies.',
@@ -77,6 +91,7 @@ class ClubSeeder extends Seeder
             ],
             // La Liga (Spain)
             [
+                'id' => 9,
                 'name' => 'FC Barcelona',
                 'slug' => 'fc-barcelona',
                 'description' => 'Mes que un club. Catalan giants of La Liga.',
@@ -85,6 +100,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/529.png'
             ],
             [
+                'id' => 10,
                 'name' => 'Real Madrid',
                 'slug' => 'real-madrid',
                 'description' => 'Los Blancos. The kings of Europe.',
@@ -93,6 +109,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/541.png'
             ],
             [
+                'id' => 11,
                 'name' => 'Atletico Madrid',
                 'slug' => 'atletico-madrid',
                 'description' => 'Los Colchoneros.',
@@ -101,6 +118,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/530.png'
             ],
             [
+                'id' => 12,
                 'name' => 'Real Sociedad',
                 'slug' => 'real-sociedad',
                 'description' => 'Erreala.',
@@ -109,6 +127,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/548.png'
             ],
             [
+                'id' => 13,
                 'name' => 'Athletic Club',
                 'slug' => 'athletic-club',
                 'description' => 'Los Leones.',
@@ -117,6 +136,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/531.png'
             ],
             [
+                'id' => 14,
                 'name' => 'Girona FC',
                 'slug' => 'girona-fc',
                 'description' => 'Blanquivermells.',
@@ -126,6 +146,7 @@ class ClubSeeder extends Seeder
             ],
             // Serie A (Italy)
             [
+                'id' => 15,
                 'name' => 'Juventus',
                 'slug' => 'juventus',
                 'description' => 'La Vecchia Signora. Italian Serie A masters.',
@@ -134,6 +155,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/496.png'
             ],
             [
+                'id' => 16,
                 'name' => 'Inter Milan',
                 'slug' => 'inter-milan',
                 'description' => 'I Nerazzurri.',
@@ -142,6 +164,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/505.png'
             ],
             [
+                'id' => 17,
                 'name' => 'AC Milan',
                 'slug' => 'ac-milan',
                 'description' => 'I Rossoneri.',
@@ -150,6 +173,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/489.png'
             ],
             [
+                'id' => 18,
                 'name' => 'SSC Napoli',
                 'slug' => 'ssc-napoli',
                 'description' => 'Gli Azzurri.',
@@ -158,6 +182,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/492.png'
             ],
             [
+                'id' => 19,
                 'name' => 'AS Roma',
                 'slug' => 'as-roma',
                 'description' => 'I Giallorossi.',
@@ -166,6 +191,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/497.png'
             ],
             [
+                'id' => 20,
                 'name' => 'SS Lazio',
                 'slug' => 'ss-lazio',
                 'description' => 'I Biancocelesti.',
@@ -174,6 +200,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/487.png'
             ],
             [
+                'id' => 21,
                 'name' => 'Atalanta BC',
                 'slug' => 'atalanta-bc',
                 'description' => 'La Dea.',
@@ -183,6 +210,7 @@ class ClubSeeder extends Seeder
             ],
             // Bundesliga (Germany)
             [
+                'id' => 22,
                 'name' => 'Bayern Munich',
                 'slug' => 'bayern-munich',
                 'description' => 'The Bavarian powerhouse of the Bundesliga.',
@@ -191,6 +219,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/157.png'
             ],
             [
+                'id' => 23,
                 'name' => 'Borussia Dortmund',
                 'slug' => 'borussia-dortmund',
                 'description' => 'Die Schwarzgelben.',
@@ -199,6 +228,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/165.png'
             ],
             [
+                'id' => 24,
                 'name' => 'Bayer Leverkusen',
                 'slug' => 'bayer-leverkusen',
                 'description' => 'Die Werkself.',
@@ -207,6 +237,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/168.png'
             ],
             [
+                'id' => 25,
                 'name' => 'RB Leipzig',
                 'slug' => 'rb-leipzig',
                 'description' => 'Die Roten Bullen.',
@@ -215,6 +246,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/173.png'
             ],
             [
+                'id' => 26,
                 'name' => 'VfB Stuttgart',
                 'slug' => 'vfb-stuttgart',
                 'description' => 'Die Schwaben.',
@@ -224,6 +256,7 @@ class ClubSeeder extends Seeder
             ],
             // Ligue 1 (France)
             [
+                'id' => 27,
                 'name' => 'Paris Saint-Germain',
                 'slug' => 'paris-saint-germain',
                 'description' => 'The stars of Ligue 1 in the heart of Paris.',
@@ -232,6 +265,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/85.png'
             ],
             [
+                'id' => 28,
                 'name' => 'Olympique Marseille',
                 'slug' => 'olympique-marseille',
                 'description' => 'Les Phoceens.',
@@ -240,6 +274,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/81.png'
             ],
             [
+                'id' => 29,
                 'name' => 'Olympique Lyon',
                 'slug' => 'olympique-lyon',
                 'description' => 'Les Gones.',
@@ -248,6 +283,7 @@ class ClubSeeder extends Seeder
                 'logo' => 'https://media.api-sports.io/football/teams/80.png'
             ],
             [
+                'id' => 30,
                 'name' => 'AS Monaco',
                 'slug' => 'as-monaco',
                 'description' => 'Les Monegasques.',

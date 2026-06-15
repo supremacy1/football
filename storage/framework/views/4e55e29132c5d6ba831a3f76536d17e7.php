@@ -51,7 +51,7 @@
     <div class="welcome-hero text-center">
         <div class="container py-4">
             <i class="fas fa-futbol mb-4" style="font-size: 4rem; color: #198754;"></i>
-            <h1 class="display-3 fw-bold mb-3">BANTA</h1>
+            <h1 class="display-3 fw-bold mb-3">SPORTBANTA</h1>
             <h2 class="h4 mb-4 text-light">The Ultimate Football Fan Network</h2>
             <p class="lead mb-5 mx-auto opacity-75" style="max-width: 700px;">
                 Connect with football fans, share your passion, and stay updated with the latest news and discussions from the beautiful game.

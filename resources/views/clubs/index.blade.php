@@ -8,9 +8,9 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Football Clubs</h2>
             @auth
-                <a href="{{ route('matches.create') }}" class="btn btn-primary">
+                <!-- <a href="{{ route('matches.create') }}" class="btn btn-primary">
                     <i class="fas fa-calendar-plus"></i> Create Match
-                </a>
+                </a> -->
             @endauth
         </div>
 

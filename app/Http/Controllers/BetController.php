@@ -36,7 +36,14 @@ class BetController extends Controller
             ->latest()
             ->get();
 
-        return view('betting.index', compact('matches', 'myBets'));
+        $pendingBetsForOthers = Bet::where('status', 'pending')
+            ->where('user_id', '!=', Auth::id())
+            ->get();
+        
+        $availableBetsCount = $pendingBetsForOthers->count();
+        $firstPendingMatchId = $pendingBetsForOthers->isNotEmpty() ? $pendingBetsForOthers->first()->match_id : null;
+
+        return view('betting.index', compact('matches', 'myBets', 'availableBetsCount', 'firstPendingMatchId'));
     }
 
     /**
@@ -49,14 +56,17 @@ class BetController extends Controller
 
         $fixtures = [];
         
-        // Fetch fixtures for today and tomorrow to cover the 24-hour window
-        $dates = [Carbon::now()->format('Y-m-d'), Carbon::now()->addDay()->format('Y-m-d')];
+        // Priority: Target Top European Leagues and Major International Tournaments
+        // World Cup (1), Euro (4), Nations League (5), AFCON (6), Copa America (9), Friendlies (10)
+        // Premier League (39), La Liga (140), Serie A (135), Bundesliga (78), Ligue 1 (61)
+        $topLeagueIds = [1, 4, 5, 6, 9, 10, 39, 140, 135, 78, 61];
 
-        foreach ($dates as $date) {
+        foreach ($topLeagueIds as $id) {
             $response = Http::timeout(15)->withHeaders(['x-apisports-key' => $apiKey])
                 ->get("https://v3.football.api-sports.io/fixtures", [
-                    'date' => $date,
-                    'status' => 'NS' // Only fetch Not Started matches
+                    'league' => $id,
+                    'next' => 15,
+                    'status' => 'NS'
                 ]);
 
             if ($response->successful()) {
@@ -64,11 +74,37 @@ class BetController extends Controller
             }
         }
 
-        return collect($fixtures)->filter(function ($item) {
+        // Fallback: If we don't have many top matches, fetch general fixtures for today and tomorrow
+        if (count($fixtures) < 15) {
+            $dates = [now()->format('Y-m-d'), now()->addDay()->format('Y-m-d')];
+            foreach ($dates as $date) {
+                $response = Http::timeout(15)->withHeaders(['x-apisports-key' => $apiKey])
+                    ->get("https://v3.football.api-sports.io/fixtures", [
+                        'date' => $date,
+                        'status' => 'NS'
+                    ]);
+
+                if ($response->successful()) {
+                    $fixtures = array_merge($fixtures, $response->json()['response'] ?? []);
+                }
+            }
+        }
+
+        return collect($fixtures)->unique('fixture.id')->filter(function ($item) {
             $date = Carbon::parse($item['fixture']['date']);
-            return $date->isBetween(now(), now()->addHours(24)) &&
-                   ($item['fixture']['status']['short'] ?? '') === 'NS';
-        })->sortBy('fixture.timestamp')->values()->toArray();
+            // Keep matches within a 3-day window
+            return $date->isAfter(now()) && $date->isBefore(now()->addDays(3));
+        })->sort(function ($a, $b) use ($topLeagueIds) {
+            $aIsTop = in_array($a['league']['id'] ?? 0, $topLeagueIds);
+            $bIsTop = in_array($b['league']['id'] ?? 0, $topLeagueIds);
+
+            // If one is a top league and the other isn't, prioritize the top league
+            if ($aIsTop && !$bIsTop) return -1;
+            if (!$aIsTop && $bIsTop) return 1;
+
+            // Otherwise, sort by match time
+            return $a['fixture']['timestamp'] <=> $b['fixture']['timestamp'];
+        })->values()->take(50)->toArray();
     }
 
     /**
@@ -155,6 +191,9 @@ class BetController extends Controller
         }
 
         return DB::transaction(function () use ($request, $match, $user, $wallet) {
+            // Deduct funds immediately to hold the stake
+            $wallet->decrement('balance', $request->amount);
+
             // Try to find a partner
             $partnerBet = Bet::where('match_id', $match->id)
                 ->where('amount', $request->amount)
@@ -164,17 +203,6 @@ class BetController extends Controller
                 ->first();
 
             if ($partnerBet) {
-                // Check if the creator still has enough balance
-                $partnerWallet = Wallet::where('user_id', $partnerBet->user_id)->first();
-                if (!$partnerWallet || $partnerWallet->balance < $request->amount) {
-                    // If partner balance dropped, we can't match. Cancel their bet or just error out.
-                    return back()->with('error', 'The open bet is no longer valid (insufficient partner funds).');
-                }
-
-                // Deduct from both
-                $wallet->decrement('balance', $request->amount);
-                $partnerWallet->decrement('balance', $request->amount);
-
                 $bet = Bet::create([
                     'match_id' => $match->id,
                     'user_id' => $user->id,
@@ -232,6 +260,19 @@ class BetController extends Controller
     private function autoSettleFinishedBets()
     {
         $this->syncFinishedMatchResults();
+
+        // Refund unmatched (pending) bets for finished matches
+        $unmatchedBets = Bet::where('status', 'pending')
+            ->whereHas('match', function ($query) {
+                $query->where('status', 'finished');
+            })->get();
+
+        foreach ($unmatchedBets as $uBet) {
+            DB::transaction(function () use ($uBet) {
+                Wallet::where('user_id', $uBet->user_id)->increment('balance', $uBet->amount);
+                $uBet->update(['status' => 'cancelled']);
+            });
+        }
 
         $lockedBets = Bet::where('status', 'locked')
             ->whereHas('match', function ($query) {
@@ -372,6 +413,8 @@ class BetController extends Controller
 
                 foreach ($matches as $match) {
                     if ($match->match_date->format('Y-m-d') !== $date) continue;
+
+                    if (!$match->homeClub || !$match->awayClub) continue;
 
                     $lookupKey = Str::slug($match->homeClub->name . '-' . $match->awayClub->name);
                     

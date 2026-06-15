@@ -42,13 +42,13 @@ class RegisterController
                 'country' => $validated['country'],
                 'password' => Hash::make($validated['password']),
                 'date_of_birth' => $validated['date_of_birth'],
-                'favorite_club_id' => $validated['favorite_club_id'],
+                'favorite_club_id' => $validated['favorite_club_id'] > 0 ? $validated['favorite_club_id'] : null,
             ]);
 
             // Auto-enroll into selected club if provided
-            if (!empty($validated['favorite_club_id'])) {
+            if ($user->favorite_club_id) {
                 try {
-                    $user->clubMemberships()->attach($validated['favorite_club_id'], ['role' => 'member']);
+                    $user->clubMemberships()->attach($user->favorite_club_id, ['role' => 'member']);
                 } catch (\Exception $e) {
                     // ignore duplicate or attach errors; user still created
                 }
