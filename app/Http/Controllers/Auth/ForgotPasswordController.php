@@ -26,7 +26,7 @@ class ForgotPasswordController
         );
 
         return $status === Password::RESET_LINK_SENT
-            ? back()->with(['status' => 'Reset link sent to your email!'])
+            ? back()->with('success_modal', 'A password reset link has been sent to your email address!')
             : back()->withErrors(['email' => trans($status)]);
     }
 
@@ -47,15 +47,14 @@ class ForgotPasswordController
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
                 $user->forceFill([
-                    'password' => Hash::make($password)
+                    'password' => Hash::make($password),
+                    'remember_token' => Str::random(60),
                 ])->save();
-
-                $user->tokens()->delete();
             }
         );
 
         return $status === Password::PASSWORD_RESET
-            ? redirect()->route('login')->with('status', 'Password reset successfully!')
+            ? redirect()->route('login')->with('success_modal', 'Your password has been reset successfully. You can now login.')
             : back()->withErrors(['email' => trans($status)]);
     }
 }

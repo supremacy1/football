@@ -255,6 +255,30 @@ class BetController extends Controller
     }
 
     /**
+     * Allows a user to cancel their pending bet and refunds the stake.
+     */
+    public function cancelBet(Bet $bet)
+    {
+        $user = Auth::user();
+
+        if ($bet->user_id !== $user->id) {
+            return back()->with('error', 'You can only cancel your own bets.');
+        }
+
+        if ($bet->status !== 'pending') {
+            return back()->with('error', 'Only pending bets can be cancelled. This bet is ' . $bet->status . '.');
+        }
+
+        return DB::transaction(function () use ($bet, $user) {
+            // Refund the stake to the user's wallet
+            Wallet::where('user_id', $user->id)->increment('balance', $bet->amount);
+            $bet->update(['status' => 'cancelled']);
+
+            return back()->with('success', 'Bet cancelled successfully. Your stake of ₦' . number_format($bet->amount, 2) . ' has been refunded.');
+        });
+    }
+
+    /**
      * Internal method to settle all locked bets for finished matches automatically.
      */
     private function autoSettleFinishedBets()

@@ -197,16 +197,13 @@ You should see the Football Social Media welcome page!
 
 ### Enable Email Functionality
 
-For password reset emails to work, update `.env`:
+For emails to work via Resend, update `.env`:
 
 ```env
-MAIL_MAILER=log
-MAIL_HOST=mailpit
-MAIL_PORT=1025
-MAIL_USERNAME=null
-MAIL_PASSWORD=null
-MAIL_FROM_ADDRESS=noreply@footballsocial.com
-MAIL_FROM_NAME="Football Social Media"
+MAIL_MAILER=resend
+RESEND_API_KEY=re_your_api_key_here
+MAIL_FROM_ADDRESS=hello@sportsbanta.com
+MAIL_FROM_NAME="SportsBanta"
 ```
 
 Check emails in `storage/logs/laravel.log`

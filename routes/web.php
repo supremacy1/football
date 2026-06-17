@@ -78,6 +78,7 @@ Route::middleware('auth')->group(function () {
     Route::post('betting/{match}', [BetController::class, 'placeBet'])->name('betting.store');
     Route::post('betting/confirm/{bet}', [BetController::class, 'confirm'])->name('betting.confirm');
     Route::post('betting/lock/{bet}', [BetController::class, 'lock'])->name('betting.lock');
+    Route::post('betting/cancel/{bet}', [BetController::class, 'cancelBet'])->name('betting.cancel');
     Route::post('betting/claim/{bet}', [BetController::class, 'claim'])->name('betting.claim');
 
     // Live Matches Route

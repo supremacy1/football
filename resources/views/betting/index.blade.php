@@ -150,6 +150,13 @@
                                         @csrf
                                         <button class="btn btn-sm btn-success w-100 fw-bold pulse-green">Claim Result</button>
                                     </form>
+                                @elseif($bet->status === 'pending')
+                                    <button type="button" class="btn btn-sm btn-danger w-100 fw-bold" 
+                                            data-bs-toggle="modal" data-bs-target="#cancelBetModal" 
+                                            data-bet-id="{{ $bet->id }}" data-bet-amount="{{ number_format($bet->amount, 2) }}"
+                                            data-bet-match="{{ $bet->match->homeClub->name }} vs {{ $bet->match->awayClub->name }}">
+                                        Cancel Bet
+                                    </form>
                                 @endif
                             </div>
 
@@ -175,6 +182,34 @@
                     @endforelse
                 </div>
             </div>
+        </div> <!-- End col-lg-4 -->
+    </div> <!-- End row -->
+</div>
+</div> <!-- End container -->
+
+<!-- Cancel Bet Confirmation Modal (Outside the grid for layout stability) -->
+<div class="modal fade" id="cancelBetModal" tabindex="-1" aria-labelledby="cancelBetModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="cancelBetModalLabel">Confirm Bet Cancellation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel this bet?</p>
+                <p><strong>Match:</strong> <span id="modalBetMatch"></span></p>
+                <p><strong>Amount:</strong> ₦<span id="modalBetAmount"></span></p>
+                <div class="alert alert-warning small mt-3">
+                    <i class="fas fa-exclamation-triangle"></i> This action cannot be undone. Your stake will be refunded to your wallet.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Keep Bet</button>
+                <form id="cancelBetForm" method="POST" action="">
+                    @csrf
+                    <button type="submit" class="btn btn-danger">Yes, Cancel Bet</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -185,4 +220,26 @@
     .pulse-green { animation: pulse-green 1.5s infinite; }
     @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); } 100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); } }
 </style>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var cancelBetModal = document.getElementById('cancelBetModal');
+        cancelBetModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget; // Button that triggered the modal
+            var betId = button.getAttribute('data-bet-id');
+            var betAmount = button.getAttribute('data-bet-amount');
+            var betMatch = button.getAttribute('data-bet-match');
+
+            var modalBetMatch = cancelBetModal.querySelector('#modalBetMatch');
+            var modalBetAmount = cancelBetModal.querySelector('#modalBetAmount');
+            var cancelBetForm = cancelBetModal.querySelector('#cancelBetForm');
+
+            modalBetMatch.textContent = betMatch;
+            modalBetAmount.textContent = betAmount;
+            cancelBetForm.action = `/betting/cancel/${betId}`; // Set the form action dynamically
+        });
+    });
+</script>
 @endsection

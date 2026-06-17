@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Auth;
 use App\Models\User;
 use App\Models\Club;
 use App\Models\Wallet;
-use App\Mail\WelcomeMail;
+use App\Mail\WelcomeEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 class RegisterController
@@ -33,7 +34,7 @@ class RegisterController
             'date_of_birth' => 'required|date',
         ]);
 
-        return DB::transaction(function () use ($validated) {
+        $user = DB::transaction(function () use ($validated) {
             $user = User::create([
                 'name' => $validated['name'],
                 'username' => $validated['username'],
@@ -54,18 +55,24 @@ class RegisterController
                 }
             }
 
-            // Create Paystack Virtual Account & Wallet
-            $this->createPaystackWallet($user);
-
-            // Send welcome email to the user
-            try {
-                Mail::to($user->email)->queue(new WelcomeMail($user));
-            } catch (\Throwable $e) {
-                // Log the error but allow registration to continue
-            }
-
-            return redirect()->route('login')->with('success_modal', 'Registration successful! Your football wallet and virtual account have been activated.');
+            return $user;
         });
+
+        // 1. Create Paystack Virtual Account & Wallet
+        try {
+            $this->createPaystackWallet($user);
+        } catch (\Throwable $e) {
+            Log::error('Paystack Wallet Creation Failed: ' . $e->getMessage());
+        }
+
+        // 2. Send welcome email to the user
+        try {
+            Mail::to($user->email)->send(new WelcomeEmail($user));
+        } catch (\Throwable $e) {
+            Log::error('Welcome Email Failed to Send: ' . $e->getMessage());
+        }
+
+        return redirect()->route('login')->with('success_modal', 'Registration successful! Welcome to the community.');
     }
 
     protected function createPaystackWallet($user)
