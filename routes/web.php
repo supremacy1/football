@@ -11,6 +11,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\BetController;
 use App\Http\Controllers\LiveMatchController;
+use App\Http\Controllers\WithdrawalController;
+use App\Http\Controllers\WebhookController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -31,6 +33,9 @@ Route::middleware('guest')->group(function () {
     Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.update');
 });
+
+// Webhook Route (Public)
+Route::post('paystack/webhook', [WebhookController::class, 'handle'])->name('paystack.webhook');
 
 Route::middleware('auth')->group(function () {
     // Logout
@@ -80,6 +85,11 @@ Route::middleware('auth')->group(function () {
     Route::post('betting/lock/{bet}', [BetController::class, 'lock'])->name('betting.lock');
     Route::post('betting/cancel/{bet}', [BetController::class, 'cancelBet'])->name('betting.cancel');
     Route::post('betting/claim/{bet}', [BetController::class, 'claim'])->name('betting.claim');
+
+    // Withdrawal Routes
+    Route::get('withdrawal', [WithdrawalController::class, 'index'])->name('withdrawal.index');
+    Route::post('withdrawal/verify', [WithdrawalController::class, 'verifyAccount'])->name('withdrawal.verify');
+    Route::post('withdrawal', [WithdrawalController::class, 'withdraw'])->name('withdrawal.store');
 
     // Live Matches Route
     Route::get('live', [LiveMatchController::class, 'index'])->name('matches.live');

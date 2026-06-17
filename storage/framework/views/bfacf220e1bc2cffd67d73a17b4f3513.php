@@ -17,7 +17,10 @@
                         </a>
                     <?php endif; ?>
                 </h2>
-                <div class="badge bg-dark px-3 py-2">Wallet Balance: ₦<?php echo e(number_format(optional(auth()->user()->wallet)->balance ?? 0, 2)); ?></div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="badge bg-dark px-3 py-2">Wallet Balance: ₦<?php echo e(number_format(optional(auth()->user()->wallet)->balance ?? 0, 2)); ?></div>
+                    <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#withdrawModal">Withdraw Funds</button>
+                </div>
             </div>
 
             <?php if($matches->isEmpty()): ?>
@@ -188,6 +191,52 @@
 </div>
 </div> <!-- End container -->
 
+<!-- Withdrawal Modal -->
+<div class="modal fade" id="withdrawModal" tabindex="-1" aria-labelledby="withdrawModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold" id="withdrawModalLabel"><i class="fas fa-university me-2"></i>Withdraw to Bank</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?php echo e(route('withdrawal.store')); ?>" method="POST">
+                <?php echo csrf_field(); ?>
+                <div class="modal-body p-4">
+                    <div class="alert alert-light border mb-4">
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Available Balance</small>
+                        <h4 class="fw-bold text-dark mb-0">₦<?php echo e(number_format(optional(auth()->user()->wallet)->balance ?? 0, 2)); ?></h4>
+                    </div>
+                    <input type="hidden" name="account_name" id="account_name_hidden">
+                    <input type="hidden" name="bank_name" id="bank_name_hidden">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Bank</label>
+                        <select name="bank_code" id="bank_code" class="form-select shadow-sm" required>
+                            <option value="">Choose bank...</option>
+                            <?php $__currentLoopData = $banks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bank): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?> 
+                                <option value="<?php echo e($bank['code']); ?>"><?php echo e($bank['name']); ?></option> 
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Account Number</label>
+                        <input type="text" name="account_number" id="account_number" class="form-control shadow-sm" maxlength="10" placeholder="e.g. 0123456789" required>
+                        <div id="verify_msg" class="small mt-2"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Amount to Withdraw (₦)</label>
+                        <input type="number" name="amount" class="form-control shadow-sm" placeholder="Minimum 100" min="100" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="withdrawSubmitBtn" class="btn btn-danger px-4 fw-bold" disabled>Confirm Withdrawal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Cancel Bet Confirmation Modal (Outside the grid for layout stability) -->
 <div class="modal fade" id="cancelBetModal" tabindex="-1" aria-labelledby="cancelBetModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -242,6 +291,44 @@
             cancelBetForm.action = `/betting/cancel/${betId}`; // Set the form action dynamically
         });
     });
+
+    // Withdrawal Verification Logic
+    const bankSelect = document.getElementById('bank_code');
+    const accountInput = document.getElementById('account_number');
+    const verifyMsg = document.getElementById('verify_msg');
+    const withdrawBtn = document.getElementById('withdrawSubmitBtn');
+
+    async function verifyAccount() {
+        if (bankSelect.value && accountInput.value.length === 10) {
+            verifyMsg.className = 'text-primary small'; 
+            verifyMsg.textContent = 'Verifying account details...';
+            
+            try {
+                const response = await fetch("<?php echo e(route('withdrawal.verify')); ?>", {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json', 
+                        'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
+                    },
+                    body: JSON.stringify({bank_code: bankSelect.value, account_number: accountInput.value})
+                });
+                const data = await response.json();
+                if (data.success) {
+                    verifyMsg.className = 'text-success small fw-bold bg-light p-2 rounded d-block'; 
+                    verifyMsg.innerHTML = '<i class="fas fa-check-circle me-1"></i> ' + data.account_name;
+                    document.getElementById('account_name_hidden').value = data.account_name;
+                    document.getElementById('bank_name_hidden').value = bankSelect.options[bankSelect.selectedIndex].text;
+                    withdrawBtn.disabled = false;
+                } else {
+                    verifyMsg.className = 'text-danger small'; 
+                    verifyMsg.textContent = 'Invalid account number or bank selection.';
+                    withdrawBtn.disabled = true;
+                }
+            } catch (e) { withdrawBtn.disabled = true; }
+        }
+    }
+    bankSelect.addEventListener('change', verifyAccount);
+    accountInput.addEventListener('input', verifyAccount);
 </script>
 <?php $__env->stopSection(); ?>
 

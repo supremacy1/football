@@ -43,7 +43,12 @@ class BetController extends Controller
         $availableBetsCount = $pendingBetsForOthers->count();
         $firstPendingMatchId = $pendingBetsForOthers->isNotEmpty() ? $pendingBetsForOthers->first()->match_id : null;
 
-        return view('betting.index', compact('matches', 'myBets', 'availableBetsCount', 'firstPendingMatchId'));
+        $banks = cache()->remember('paystack_banks', 86400, function() {
+            $response = Http::withToken(env('PAYSTACK_SECRET_KEY'))->get('https://api.paystack.co/bank');
+            return $response->successful() ? $response->json('data') : [];
+        });
+
+        return view('betting.index', compact('matches', 'myBets', 'availableBetsCount', 'firstPendingMatchId', 'banks'));
     }
 
     /**
