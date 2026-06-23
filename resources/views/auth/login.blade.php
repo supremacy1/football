@@ -18,20 +18,24 @@
         box-shadow: 0 15px 35px rgba(0,0,0,0.3);
     }
     .btn-football {
-        background-color: #198754;
-        border-color: #198754;
+        background-color: #030816;
+        border-color: #020a18;
         color: white;
         font-weight: bold;
         padding: 12px;
         transition: all 0.3s ease;
     }
     .btn-football:hover {
-        background-color: #146c43;
+        background-color: #05130c;
         transform: translateY(-2px);
     }
     .form-control:focus {
-        border-color: #198754;
+        border-color: #030816;
         box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+    }
+    .form-label {
+        font-weight: bold;
+        color: #0a0e0c;
     }
 </style>
 
@@ -41,8 +45,8 @@
             <div class="card-body p-5">
                 <div class="text-center mb-4">
                     <i class="fas fa-futbol fa-3x text-success mb-3"></i>
-                    <h2 class="fw-bold">KICK OFF</h2>
-                    <p class="text-muted">Enter your tactics to continue</p>
+                    <h2 class="fw-bold text-dark">KICK OFF</h2>
+                    <p class="text-muted text-dark">Enter your tactics to continue</p>
                 </div>
 
                 <form action="{{ route('login') }}" method="POST">
@@ -71,7 +75,7 @@
                         @enderror
                     </div>
 
-                    <div class="mb-3 form-check">
+                    <div class="mb-3 form-check text-dark">
                         <input type="checkbox" class="form-check-input" id="remember" name="remember">
                         <label class="form-check-label" for="remember">Remember me</label>
                     </div>
@@ -79,12 +83,12 @@
                     <button type="submit" class="btn btn-football w-100 mb-3 text-uppercase">Login to Stadium</button>
                 </form>
 
-                <p class="text-center">
-                    <a href="{{ route('password.request') }}" class="text-success text-decoration-none small">Forgot your tactics?</a>
+                <p class="text-center" >
+                    <a href="{{ route('password.request') }}" class="text-success text-decoration-none small text-dark">Forgot your tactics?</a>
                 </p>
 
-                <p class="text-center mb-0">
-                    Don't have an account? <a href="{{ route('register') }}" class="text-success fw-bold text-decoration-none">Register here</a>
+                <p class="text-center mb-0 text-dark">
+                    Don't have an account? <a href="{{ route('register') }}" class="text-success fw-bold text-decoration-none text-dark">Register here</a>
                 </p>
             </div>
         </div>

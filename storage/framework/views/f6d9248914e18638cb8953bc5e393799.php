@@ -11,12 +11,12 @@
                     <img src="<?php echo e($post->user->profile_picture ? asset('storage/' . $post->user->profile_picture) : 'https://via.placeholder.com/40'); ?>" alt="<?php echo e($post->user->name); ?>" class="avatar me-3">
                     <div>
                         <h6 class="mb-0">
-                            <a href="<?php echo e(route('profile.show', $post->user)); ?>" class="text-decoration-none"><?php echo e($post->user->name); ?></a>
+                            <a href="<?php echo e(route('profile.show', $post->user)); ?>" class="text-decoration-none text-white"><?php echo e($post->user->name); ?></a>
                         </h6>
                         <small class="text-muted">
                             <?php echo e('@' . $post->user->username); ?> · 
                             <?php if($post->user->favoriteClub): ?>
-                                <span class="text-primary fw-semibold"><i class="fas fa-shield-alt small"></i> <?php echo e($post->user->favoriteClub->name); ?></span> ·
+                                <span class="text-white fw-semibold"><i class="fas fa-shield-alt small"></i> <?php echo e($post->user->favoriteClub->name); ?></span> ·
                             <?php endif; ?>
                             <?php echo e($post->created_at->diffForHumans()); ?></small>
                     </div>
@@ -97,10 +97,10 @@
                         <div class="d-flex align-items-center">
                             <img src="<?php echo e($comment->user->profile_picture ? asset('storage/' . $comment->user->profile_picture) : 'https://via.placeholder.com/32'); ?>" alt="<?php echo e($comment->user->name); ?>" class="avatar me-2" style="width: 32px; height: 32px;">
                             <div>
-                                <h6 class="mb-0">
-                                    <a href="<?php echo e(route('profile.show', $comment->user)); ?>" class="text-decoration-none"><?php echo e($comment->user->name); ?></a>
+                                <h6 class="mb-0 text-white">
+                                    <a href="<?php echo e(route('profile.show', $comment->user)); ?>" class="text-decoration-none text-white"><?php echo e($comment->user->name); ?></a>
                                 </h6>
-                                <small class="text-muted"><?php echo e('@' . $comment->user->username); ?> · <?php echo e($comment->created_at->diffForHumans()); ?></small>
+                                <small class="text-muted text-white"><?php echo e('@' . $comment->user->username); ?> · <?php echo e($comment->created_at->diffForHumans()); ?></small>
                             </div>
                         </div>
                         <?php if(auth()->guard()->check()): ?>
@@ -120,7 +120,7 @@
                                 <i class="fas fa-heart"></i> <?php echo e($comment->likes_count); ?>
 
                             </button>
-                            <button type="button" class="btn btn-sm btn-link text-primary" onclick="toggleReplyForm(<?php echo e($comment->id); ?>)">
+                            <button type="button" class="btn btn-sm btn-link text-white" onclick="toggleReplyForm(<?php echo e($comment->id); ?>)">
                                 <i class="fas fa-reply"></i> Reply
                             </button>
                         </div>

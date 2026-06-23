@@ -4,6 +4,7 @@
 
 @section('content')
 <style>
+  
     .welcome-hero {
         background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
         background-size: cover;
@@ -12,17 +13,19 @@
         padding: 80px 0;
         border-radius: 15px;
         margin-bottom: 40px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 2px solid rgb(255, 255, 255);
     }
     .feature-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         border: none;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 15px rgba(19, 18, 18, 0.94);
         border-radius: 12px;
+        background-color: #f8f9fa;
+        color: #000;
     }
     .feature-card:hover {
         transform: translateY(-10px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 25px rgba(255, 255, 255, 0.9);
     }
     .icon-box {
         width: 60px;
@@ -83,7 +86,7 @@
                             <i class="fas fa-users fa-lg"></i>
                         </div>
                         <h5 class="card-title fw-bold mb-3">Connect with Fans</h5>
-                        <p class="card-text text-muted small">Join a vibrant community of football enthusiasts from around the world and debate the latest scores.</p>
+                        <p class="card-text text-muted small text-uppercase text-white">Join a vibrant community of football enthusiasts from around the world and debate the latest scores.</p>
                     </div>
                 </div>
             </div>

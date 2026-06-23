@@ -11,12 +11,12 @@
                     <img src="{{ $post->user->profile_picture ? asset('storage/' . $post->user->profile_picture) : 'https://via.placeholder.com/40' }}" alt="{{ $post->user->name }}" class="avatar me-3">
                     <div>
                         <h6 class="mb-0">
-                            <a href="{{ route('profile.show', $post->user) }}" class="text-decoration-none">{{ $post->user->name }}</a>
+                            <a href="{{ route('profile.show', $post->user) }}" class="text-decoration-none text-white">{{ $post->user->name }}</a>
                         </h6>
                         <small class="text-muted">
                             {{ '@' . $post->user->username }} · 
                             @if($post->user->favoriteClub)
-                                <span class="text-primary fw-semibold"><i class="fas fa-shield-alt small"></i> {{ $post->user->favoriteClub->name }}</span> ·
+                                <span class="text-white fw-semibold"><i class="fas fa-shield-alt small"></i> {{ $post->user->favoriteClub->name }}</span> ·
                             @endif
                             {{ $post->created_at->diffForHumans() }}</small>
                     </div>
@@ -97,10 +97,10 @@
                         <div class="d-flex align-items-center">
                             <img src="{{ $comment->user->profile_picture ? asset('storage/' . $comment->user->profile_picture) : 'https://via.placeholder.com/32' }}" alt="{{ $comment->user->name }}" class="avatar me-2" style="width: 32px; height: 32px;">
                             <div>
-                                <h6 class="mb-0">
-                                    <a href="{{ route('profile.show', $comment->user) }}" class="text-decoration-none">{{ $comment->user->name }}</a>
+                                <h6 class="mb-0 text-white">
+                                    <a href="{{ route('profile.show', $comment->user) }}" class="text-decoration-none text-white">{{ $comment->user->name }}</a>
                                 </h6>
-                                <small class="text-muted">{{ '@' . $comment->user->username }} · {{ $comment->created_at->diffForHumans() }}</small>
+                                <small class="text-muted text-white">{{ '@' . $comment->user->username }} · {{ $comment->created_at->diffForHumans() }}</small>
                             </div>
                         </div>
                         @auth
@@ -119,7 +119,7 @@
                             <button type="button" class="btn btn-sm btn-link @if ($comment->isLikedBy(auth()->user())) text-danger @endif" onclick="handleCommentLike(this, '{{ $comment->id }}')">
                                 <i class="fas fa-heart"></i> {{ $comment->likes_count }}
                             </button>
-                            <button type="button" class="btn btn-sm btn-link text-primary" onclick="toggleReplyForm({{ $comment->id }})">
+                            <button type="button" class="btn btn-sm btn-link text-white" onclick="toggleReplyForm({{ $comment->id }})">
                                 <i class="fas fa-reply"></i> Reply
                             </button>
                         </div>

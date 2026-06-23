@@ -6,11 +6,12 @@
     <title><?php echo $__env->yieldContent('title'); ?> - Football Social Media</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="<?php echo e(asset('images/logo.svg')); ?>">
     <style>
         :root {
-            --primary-color: #1f4788;
-            --secondary-color: #ff6b6b;
-            --light-bg: #f8f9fa;
+            --primary-color: #1f4788; 
+            --secondary-color: #ff6b6b; 
+            --light-bg: #0a0a2a; /* Dark background */
         }
 
         body {
@@ -20,8 +21,8 @@
         }
 
         .navbar {
-            background-color: var(--primary-color);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #1a1a3e 0%, #0a0a2a 100%);
+            border-bottom: 2px solid #667eea;
             position: fixed;
             top: 0;
             left: 0;
@@ -32,7 +33,7 @@
         .navbar-brand {
             font-weight: bold;
             font-size: 1.5rem;
-            color: white !important;
+            color: #fafafc !important;
         }
 
         .nav-link {
@@ -45,13 +46,13 @@
         }
 
         .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
+            background-color: #667eea;
+            border-color: #667eea;
         }
 
         .btn-primary:hover {
-            background-color: #153355;
-            border-color: #153355;
+            background-color: #556ee0;
+            border-color: #556ee0;
         }
 
         .btn-danger {
@@ -65,24 +66,25 @@
         }
 
         .card {
-            border: none;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            background-color: #1a1a3e;
+            border: 1px solid #333;
+            color: white;
         }
-
+        
         .card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .post-card {
-            margin-bottom: 20px;
+            background: #0a0a2a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
 
         .post-header {
-            padding: 15px;
-            border-bottom: 1px solid #e9ecef;
+            display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
         }
 
         .post-body {
@@ -92,22 +94,22 @@
         .post-footer {
             padding: 10px 15px;
             border-top: 1px solid #e9ecef;
-            display: flex;
-            justify-content: space-around;
-            background-color: #f8f9fa;
+            display: flex; justify-content: space-around;
+            background-color: transparent;
+            border-top: 1px solid #333;
         }
 
-        .post-footer button {
+        .post-footer button, .post-footer a {
             border: none;
             background: none;
-            color: #6c757d;
+            color: #888;
             cursor: pointer;
             font-size: 0.9rem;
             flex: 1;
             padding: 10px;
         }
 
-        .post-footer button:hover {
+        .post-footer button:hover, .post-footer a:hover {
             color: var(--primary-color);
         }
 
@@ -115,7 +117,7 @@
             color: var(--secondary-color);
         }
 
-        .avatar {
+        .avatar, .post-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -159,18 +161,19 @@
     </style>
     <?php echo $__env->yieldContent('styles'); ?>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="<?php echo e(route('welcome')); ?>">
-                <i class="fas fas fa-futbol"></i> Football Social
-            </a>
+<body class="bg-dark text-white"> 
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #1a1a3e 0%, #0a0a2a 100%); border-bottom: 2px solid #667eea;">
+        <div class="container-fluid ">
+           <a class="navbar-brand d-flex align-items-center" href="<?php echo e(route('welcome')); ?>" style="color: #ffffff;">
+    <img src="<?php echo e(asset('images/sportslogo.png')); ?>" alt="SportsBanta Logo" width="40" height="40" class="me-2">
+    SportsBanta
+</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <?php if(auth()->guard()->check()): ?>
+                    <?php if(auth()->guard()->check()): ?> 
                         <li class="nav-item">
                             <a class="nav-link" href="<?php echo e(route('feed')); ?>"><i class="fas fa-home"></i> Feed</a>
                         </li>
@@ -195,32 +198,24 @@
                                 <button type="submit" class="nav-link btn btn-link"><i class="fas fa-sign-out-alt"></i> Logout</button>
                             </form>
                         </li>
-                    <?php else: ?>
+                    <?php else: ?> 
                         <li class="nav-item">
-                            <a class="nav-link" href="<?php echo e(route('login')); ?>"><i class="fas fa-sign-in-alt"></i> Login</a>
+                            <a class="nav-link" href="<?php echo e(route('login')); ?>">🔐 Login</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="<?php echo e(route('register')); ?>"><i class="fas fa-user-plus"></i> Register</a>
+                            <a class="nav-link" href="<?php echo e(route('register')); ?>">📝 Register</a>
                         </li>
                     <?php endif; ?>
                 </ul>
             </div>
         </div>
     </nav>
-
+    
     <main class="py-4">
-        <div class="container">
-            <div class="row">
-                <?php if(auth()->guard()->check()): ?>
-                    <!-- Main Content -->
-                    <div class="col-12">
-                <?php else: ?>
-                    <div class="col-12">
-                <?php endif; ?>
+        <div class="container-fluid">
+            <div class="row justify-content-center">
                         <?php echo $__env->yieldContent('content'); ?>
                     </div>
-                </div>
-            </div>
         </div>
     </main>
 
@@ -237,6 +232,18 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Screen Image Preview Modal -->
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-body p-0 text-center position-relative">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <img src="" id="previewImageSource" class="img-fluid rounded shadow-lg" style="max-height: 90vh;">
                 </div>
             </div>
         </div>
@@ -274,6 +281,18 @@
                 errorHtml += '</ul>';
                 showModalAlert('Validation Error', errorHtml, true);
             <?php endif; ?>
+
+            // Global Image Preview Logic for elements with .preview-trigger
+            const previewModalEl = document.getElementById('imagePreviewModal');
+            const previewModal = previewModalEl ? new bootstrap.Modal(previewModalEl) : null;
+            const previewImg = document.getElementById('previewImageSource');
+            document.addEventListener('click', function (e) {
+                const trigger = e.target.closest('.preview-trigger');
+                if (trigger && previewModal && previewImg) {
+                    const src = trigger.getAttribute('data-src');
+                    if (src) { previewImg.src = src; previewModal.show(); }
+                }
+            });
         });
     </script>
     <?php echo $__env->yieldContent('scripts'); ?>

@@ -90,14 +90,9 @@
 
                             <?php
                                 $images = null;
-                                if (!empty($post->images)) {
-                                    $decoded = json_decode($post->images, true);
-                                    if (is_array($decoded)) {
-                                        $images = $decoded;
-                                    }
-                                }
-                                if (!$images && !empty($post->image)) {
-                                    $images = [$post->image];
+                                if (!empty($post->image)) {
+                                    $decoded = @json_decode($post->image, true);
+                                    $images = is_array($decoded) ? $decoded : [$post->image];
                                 }
                             ?>
 
@@ -105,47 +100,17 @@
                                 <div class="post-images mb-2">
                                     <?php if(count($images) == 1): ?>
                                         <?php $img = $images[0]; $src = \Illuminate\Support\Str::startsWith($img, ['http://','https://']) ? $img : asset('storage/' . $img); ?>
-                                        <a href="#" class="open-image-modal d-block" data-post-id="<?php echo e($post->id); ?>" data-index="0"><img src="<?php echo e($src); ?>" alt="Post image" class="img-fluid rounded" style="max-height:500px; width:100%; object-fit:cover;"></a>
+                                        <img src="<?php echo e($src); ?>" alt="Post image" class="img-fluid rounded preview-trigger" data-src="<?php echo e($src); ?>" style="max-height:500px; width:100%; object-fit:cover; cursor: pointer;">
                                     <?php else: ?>
                                         <div class="row g-2">
                                             <?php $__currentLoopData = $images; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $img): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                 <?php $src = \Illuminate\Support\Str::startsWith($img, ['http://','https://']) ? $img : asset('storage/' . $img); ?>
                                                 <div class="col-6">
-                                                    <a href="#" class="open-image-modal d-block" data-post-id="<?php echo e($post->id); ?>" data-index="<?php echo e($i); ?>">
-                                                        <img src="<?php echo e($src); ?>" alt="Post image" class="img-fluid rounded" style="height:200px; width:100%; object-fit:cover;">
-                                                    </a>
+                                                    <img src="<?php echo e($src); ?>" alt="Post image" class="img-fluid rounded preview-trigger" data-src="<?php echo e($src); ?>" style="height:200px; width:100%; object-fit:cover; cursor: pointer;">
                                                 </div>
                                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </div>
                                     <?php endif; ?>
-                                </div>
-
-                                <!-- Modal / Carousel for this post -->
-                                <div class="modal fade" id="imageModal-<?php echo e($post->id); ?>" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered modal-lg">
-                                        <div class="modal-content bg-dark">
-                                            <div class="modal-body p-0">
-                                                <div id="carousel-<?php echo e($post->id); ?>" class="carousel slide" data-bs-ride="carousel">
-                                                    <div class="carousel-inner">
-                                                        <?php $__currentLoopData = $images; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $img): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                            <?php $src = \Illuminate\Support\Str::startsWith($img, ['http://','https://']) ? $img : asset('storage/' . $img); ?>
-                                                            <div class="carousel-item <?php if($i==0): ?> active <?php endif; ?>">
-                                                                <img src="<?php echo e($src); ?>" class="d-block w-100" style="max-height:80vh; object-fit:contain;" alt="">
-                                                            </div>
-                                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                                    </div>
-                                                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel-<?php echo e($post->id); ?>" data-bs-slide="prev">
-                                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                                        <span class="visually-hidden">Previous</span>
-                                                    </button>
-                                                    <button class="carousel-control-next" type="button" data-bs-target="#carousel-<?php echo e($post->id); ?>" data-bs-slide="next">
-                                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                                        <span class="visually-hidden">Next</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -186,17 +151,62 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="text-center mb-3">
-                                            <small class="text-muted text-uppercase d-block">Available Balance</small>
-                                            <h4 class="fw-bold text-success mb-0">₦<?php echo e(number_format($wallet->balance, 2)); ?></h4>
+                                            <small class="text-muted text-uppercase d-block color-secondary">Available Balance</small>
+                                            <h4 class="fw-bold text-success mb-0 text-white">₦<?php echo e(number_format($wallet->balance, 2)); ?></h4>
                                         </div>
                                         <div class="p-2 bg-light rounded border mb-3">
-                                            <p class="mb-1 small"><strong>Bank:</strong> <?php echo e($wallet->paystack_bank_name); ?></p>
-                                            <p class="mb-1 small"><strong>Account:</strong> <?php echo e($wallet->paystack_account_number); ?></p>
-                                            <p class="mb-0 text-muted" style="font-size: 0.7rem;"><?php echo e($wallet->paystack_account_name); ?></p>
+                                            <p class="mb-1 small text-uppercase text-muted text-dark"><strong>Bank:</strong> <?php echo e($wallet->paystack_bank_name); ?></p>
+                                            <p class="mb-1 small text-uppercase text-muted text-dark"><strong>Account:</strong> <?php echo e($wallet->paystack_account_number); ?></p>
+                                            <p class="mb-0 text-muted" style="font-size: 0.7rem;"> <strong>Name:</strong><?php echo e($wallet->paystack_account_name); ?></p>
                                         </div>
-                                        <button class="btn btn-football w-100 btn-sm text-uppercase fw-bold" onclick="alert('Withdrawal request initiated!')">
-                                            Withdraw Funds
-                                        </button>
+<button type="button"
+        class="btn btn-link text-white text-decoration-none w-100 text-uppercase fw-bold"
+    data-bs-toggle="modal"
+    data-bs-target="#withdrawModal">
+    Withdraw Funds
+</button>
+                                    </div>
+                                </div>
+
+                                <!-- Withdrawal History Table (Sidebar version) -->
+                                <div class="card sidebar-card border-0 shadow-sm mt-3">
+                                    <div class="card-header bg-white py-2 border-bottom">
+                                        <h6 class="mb-0 fw-bold text-dark small text-uppercase">Withdrawal History</h6>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.75rem;">
+                                                <thead class="table-light text-muted">
+                                                    <tr>
+                                                        <th class="ps-2">Details</th>
+                                                        <th class="text-end pe-2">Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php $__empty_1 = true; $__currentLoopData = $withdrawals; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $withdrawal): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                                        <tr>
+                                                            <td class="ps-2 py-2">
+                                                                <div class="fw-bold"><?php echo e($withdrawal->bank_name); ?></div>
+                                                                <div class="text-muted"><?php echo e($withdrawal->created_at->format('d M')); ?> • 
+                                                                    <span class="text-<?php echo e($withdrawal->status === 'success' ? 'success' : ($withdrawal->status === 'failed' ? 'danger' : 'warning')); ?>">
+                                                                        <?php echo e(strtoupper($withdrawal->status)); ?>
+
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td class="text-end pe-2 fw-bold">
+                                                                ₦<?php echo e(number_format($withdrawal->amount, 2)); ?>
+
+                                                            </td>
+                                                        </tr>
+                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                                        <tr>
+                                                            <td colspan="2" class="text-center py-3 text-muted">No history yet.</td>
+                                                        </tr>
+                                                    <?php endif; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             <?php endif; ?>
@@ -231,17 +241,16 @@
                     <?php $__currentLoopData = $user->posts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $post): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <?php
                             $images = null;
-                            if (!empty($post->images)) {
-                                $dec = json_decode($post->images, true);
-                                if (is_array($dec)) $images = $dec;
+                            if (!empty($post->image)) {
+                                $dec = @json_decode($post->image, true);
+                                $images = is_array($dec) ? $dec : [$post->image];
                             }
-                            if (!$images && !empty($post->image)) $images = [$post->image];
                         ?>
                         <?php if(!empty($images)): ?>
                             <?php $__currentLoopData = $images; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $img): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <?php $src = \Illuminate\Support\Str::startsWith($img, ['http://','https://']) ? $img : asset('storage/' . $img); ?>
                                 <div class="col-4">
-                                    <a href="#" class="open-image-modal" data-post-id="<?php echo e($post->id); ?>" data-index="<?php echo e($i); ?>"><img src="<?php echo e($src); ?>" class="img-fluid rounded" style="height:150px; width:100%; object-fit:cover;" alt=""></a>
+                                    <img src="<?php echo e($src); ?>" class="img-fluid rounded preview-trigger" data-src="<?php echo e($src); ?>" style="height:150px; width:100%; object-fit:cover; cursor: pointer;" alt="">
                                 </div>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         <?php endif; ?>
@@ -253,17 +262,55 @@
     </div>
 </div>
 
-<!-- Full Screen Image Preview Modal -->
-<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content bg-transparent border-0">
-            <div class="modal-body p-0 text-center position-relative">
-                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
-                <img src="" id="previewImageSource" class="img-fluid rounded shadow-lg" style="max-height: 90vh;">
+<?php if(auth()->guard()->check()): ?>
+    <?php if(auth()->user()->id === $user->id): ?>
+    <!-- Withdrawal Modal -->
+    <div class="modal fade" id="withdrawModal" tabindex="-1" aria-labelledby="withdrawModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold" id="withdrawModalLabel"><i class="fas fa-university me-2"></i>Withdraw to Bank</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="<?php echo e(route('withdrawal.store')); ?>" method="POST">
+                    <?php echo csrf_field(); ?>
+                    <div class="modal-body p-4">
+                        <div class="alert alert-light border mb-4 text-center">
+                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Available Balance</small>
+                            <h4 class="fw-bold text-dark mb-0">₦<?php echo e(number_format(optional(auth()->user()->wallet)->balance ?? 0, 2)); ?></h4>
+                        </div>
+                        <input type="hidden" name="account_name" id="account_name_hidden">
+                        <input type="hidden" name="bank_name" id="bank_name_hidden">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Select Bank</label>
+                            <select name="bank_code" id="bank_code" class="form-select shadow-sm" required>
+                                <option value="">Choose bank...</option>
+                                <?php $__currentLoopData = $banks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bank): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?> 
+                                    <option value="<?php echo e($bank['code']); ?>"><?php echo e($bank['name']); ?></option> 
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Account Number</label>
+                            <input type="text" name="account_number" id="account_number" class="form-control shadow-sm" maxlength="10" placeholder="e.g. 0123456789" required>
+                            <div id="verify_msg" class="small mt-2"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Amount to Withdraw (₦)</label>
+                            <input type="number" name="amount" class="form-control shadow-sm" placeholder="Minimum 100" min="100" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="withdrawSubmitBtn" class="btn btn-danger px-4 fw-bold text-uppercase" disabled>Confirm Withdrawal</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</div>
+    <?php endif; ?>
+<?php endif; ?>
 
 <?php $__env->startSection('styles'); ?>
     <style>
@@ -285,37 +332,48 @@
 <?php $__env->startSection('scripts'); ?>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.open-image-modal').forEach(function (el) {
-                el.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    var postId = el.getAttribute('data-post-id');
-                    var index = parseInt(el.getAttribute('data-index') || 0);
-                    var modalEl = document.getElementById('imageModal-' + postId);
-                    if (!modalEl) return;
-                    var modal = new bootstrap.Modal(modalEl);
-                    modal.show();
-                    var carouselEl = document.getElementById('carousel-' + postId);
-                    if (carouselEl) {
-                        var bsCarousel = bootstrap.Carousel.getOrCreateInstance(carouselEl);
-                        bsCarousel.to(index);
-                    }
-                });
-            });
-
-            // Generic Image Preview Logic
-            const previewModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
-            const previewImg = document.getElementById('previewImageSource');
-            document.querySelectorAll('.preview-trigger').forEach(function (el) {
-                el.addEventListener('click', function (e) {
-                    const src = this.getAttribute('data-src');
-                    if (src) { previewImg.src = src; previewModal.show(); }
-                });
-            });
-
             // Stop event bubbling for the edit button so it doesn't trigger preview
             document.querySelector('.edit-cover-btn')?.addEventListener('click', function(e) {
                 e.stopPropagation();
             });
+
+            // Withdrawal Verification Logic
+            const bankSelect = document.getElementById('bank_code');
+            const accountInput = document.getElementById('account_number');
+            const verifyMsg = document.getElementById('verify_msg');
+            const withdrawBtn = document.getElementById('withdrawSubmitBtn');
+
+            async function verifyAccount() {
+                if (bankSelect && bankSelect.value && accountInput.value.length === 10) {
+                    verifyMsg.className = 'text-primary small'; 
+                    verifyMsg.textContent = 'Verifying account details...';
+                    
+                    try {
+                        const response = await fetch("<?php echo e(route('withdrawal.verify')); ?>", {
+                            method: 'POST', 
+                            headers: {
+                                'Content-Type': 'application/json', 
+                                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
+                            },
+                            body: JSON.stringify({bank_code: bankSelect.value, account_number: accountInput.value})
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            verifyMsg.className = 'text-success small fw-bold bg-light p-2 rounded d-block'; 
+                            verifyMsg.innerHTML = '<i class="fas fa-check-circle me-1"></i> ' + data.account_name;
+                            document.getElementById('account_name_hidden').value = data.account_name;
+                            document.getElementById('bank_name_hidden').value = bankSelect.options[bankSelect.selectedIndex].text;
+                            withdrawBtn.disabled = false;
+                        } else {
+                            verifyMsg.className = 'text-danger small'; 
+                            verifyMsg.textContent = 'Invalid account number or bank selection.';
+                            withdrawBtn.disabled = true;
+                        }
+                    } catch (e) { if(withdrawBtn) withdrawBtn.disabled = true; }
+                }
+            }
+            if(bankSelect) bankSelect.addEventListener('change', verifyAccount);
+            if(accountInput) accountInput.addEventListener('input', verifyAccount);
         });
     </script>
 <?php $__env->stopSection(); ?>

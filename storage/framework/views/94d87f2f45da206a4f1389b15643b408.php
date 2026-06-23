@@ -33,6 +33,10 @@
         border-color: #198754;
         box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
     }
+    .form-label {
+        font-weight: bold;
+        color: #040316;
+    }
 </style>
 
 <div class="row justify-content-center">
@@ -41,7 +45,7 @@
             <div class="card-body p-5">
                 <div class="text-center mb-4">
                     <i class="fas fa-user-plus fa-3x text-success mb-3"></i>
-                    <h2 class="fw-bold"><i class="fas fa-futbol text-success me-2"></i>JOIN THE SQUAD</h2>
+                    <h2 class="fw-bold text-dark"><i class="fas fa-futbol text-success me-2"></i>JOIN THE SQUAD</h2>
                     <p class="text-muted">Create your fan profile today</p>
                 </div>
 
@@ -290,11 +294,11 @@ unset($__errorArgs, $__bag); ?>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-football w-100 mb-3 text-uppercase">Sign Me Up</button>
+                    <button type="submit" class="btn btn-football w-100 mb-3 text-uppercase"  style="background-color: #03031a;">Sign Me Up</button>
                 </form>
 
-                <p class="text-center mb-0">
-                    Already in the squad? <a href="<?php echo e(route('login')); ?>" class="text-success fw-bold text-decoration-none">Login here</a>
+                <p class="text-center mb-0 text-muted text-dark">
+                    Already in the squad? <a href="<?php echo e(route('login')); ?>" class="text-success fw-bold text-decoration-none ">Login here</a>
                 </p>
             </div>
         </div>

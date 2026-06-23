@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Club;
+use App\Models\Withdrawal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class ProfileController
@@ -16,7 +18,16 @@ class ProfileController
             $query->orderBy('created_at', 'desc');
         }, 'followers', 'following', 'clubMemberships', 'favoriteClub']);
 
-        return view('profile.show', ['user' => $user]);
+        $banks = []; $withdrawals = collect();
+        if (Auth::id() === $user->id) {
+            $banks = cache()->remember('paystack_banks', 86400, function() {
+                $response = Http::withToken(env('PAYSTACK_SECRET_KEY'))->get('https://api.paystack.co/bank');
+                return $response->successful() ? $response->json('data') : [];
+            });
+            $withdrawals = Withdrawal::where('user_id', Auth::id())->latest()->get();
+        }
+
+        return view('profile.show', compact('user', 'banks', 'withdrawals'));
     }
 
     public function edit()
@@ -31,7 +42,7 @@ class ProfileController
         $user = Auth::user();
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255', // Corrected validation rule
             'bio' => 'nullable|string|max:500',
             'location' => 'nullable|string|max:255',
             'date_of_birth' => 'nullable|date',

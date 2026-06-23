@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bet;
 use App\Models\Club;
+use App\Models\Withdrawal;
 use App\Models\ClubMatch;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
@@ -48,7 +49,9 @@ class BetController extends Controller
             return $response->successful() ? $response->json('data') : [];
         });
 
-        return view('betting.index', compact('matches', 'myBets', 'availableBetsCount', 'firstPendingMatchId', 'banks'));
+        $withdrawals = Withdrawal::where('user_id', Auth::id())->latest()->get();
+
+        return view('betting.index', compact('matches', 'myBets', 'availableBetsCount', 'firstPendingMatchId', 'banks', 'withdrawals'));
     }
 
     /**

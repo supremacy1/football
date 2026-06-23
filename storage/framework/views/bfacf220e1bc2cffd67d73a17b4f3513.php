@@ -8,7 +8,7 @@
         <!-- Upcoming Matches -->
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">Fixtures (Next 24 Hours)
+                <h2 class="mb-0">Betting Fixtures
                     <?php if($availableBetsCount > 0 && $firstPendingMatchId): ?>
                         <a href="#match-<?php echo e($firstPendingMatchId); ?>" class="text-decoration-none">
                             <span class="badge bg-warning text-dark ms-2" style="font-size: 0.4em; vertical-align: middle; cursor: pointer;">
@@ -18,8 +18,51 @@
                     <?php endif; ?>
                 </h2>
                 <div class="d-flex align-items-center gap-2">
-                    <div class="badge bg-dark px-3 py-2">Wallet Balance: ₦<?php echo e(number_format(optional(auth()->user()->wallet)->balance ?? 0, 2)); ?></div>
+                    <div class="badge bg-light text-dark px-3 py-2">Wallet Balance: ₦<?php echo e(number_format(optional(auth()->user()->wallet)->balance ?? 0, 2)); ?></div>
                     <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#withdrawModal">Withdraw Funds</button>
+                </div>
+            </div>
+
+            <!-- Withdrawal History Table -->
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-dark text-white py-3 border-bottom border-secondary">
+                    <!-- <h5 class="mb-0 fw-bold"><i class="fas fa-file-invoice-dollar me-2 text-danger"></i>Withdrawal History</h5> -->
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <!-- <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr class="small text-uppercase text-white-50">
+                                    <th class="ps-3">Date</th>
+                                    <th>Bank Details</th>
+                                    <th>Amount</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php $__empty_1 = true; $__currentLoopData = $withdrawals; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $withdrawal): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                    <tr>
+                                        <td class="ps-3 small text-muted"><?php echo e($withdrawal->created_at->format('d M, Y H:i')); ?></td>
+                                        <td>
+                                            <div class="fw-bold small"><?php echo e($withdrawal->bank_name); ?></div>
+                                            <div class="text-muted" style="font-size: 0.75rem;"><?php echo e($withdrawal->account_number); ?></div>
+                                        </td>
+                                        <td class="fw-bold">₦<?php echo e(number_format($withdrawal->amount, 2)); ?></td>
+                                        <td class="text-center">
+                                            <span class="badge <?php echo e($withdrawal->status === 'success' ? 'bg-success' : ($withdrawal->status === 'failed' ? 'bg-danger' : 'bg-warning')); ?>">
+                                                <?php echo e(strtoupper($withdrawal->status)); ?>
+
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">No withdrawal history recorded yet.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table> -->
+                    </div>
                 </div>
             </div>
 
@@ -246,7 +289,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to cancel this bet?</p>
+                <p style="color:black">Are you sure you want to cancel this bet?</p>
                 <p><strong>Match:</strong> <span id="modalBetMatch"></span></p>
                 <p><strong>Amount:</strong> ₦<span id="modalBetAmount"></span></p>
                 <div class="alert alert-warning small mt-3">
